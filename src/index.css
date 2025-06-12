@@ -72,6 +72,11 @@
   }
   body {
     @apply bg-background text-foreground;
+    overflow-x: hidden;
+  }
+
+  html {
+    overflow-x: hidden;
   }
 }
 
@@ -155,8 +160,8 @@
   }
 
   .cyber-card {
-    background: rgba(26, 26, 26, 0.9);
-    border: 1px solid rgba(0, 255, 157, 0.2);
+    background: rgba(15, 15, 15, 0.95);
+    border: 1px solid rgba(0, 255, 157, 0.3);
     backdrop-filter: blur(10px);
     transition: all 0.3s ease;
     position: relative;
@@ -215,6 +220,10 @@
   }
 
   .slide-in-bottom {
+    animation: slideInBottom 0.6s ease-out;
+  }
+
+  .animate-slide-in-bottom {
     animation: slideInBottom 0.6s ease-out;
   }
 
@@ -411,5 +420,85 @@
   100% {
     transform: translateY(0) scale(1);
     opacity: 1;
+  }
+}
+
+@keyframes animate-flicker-in {
+  0% {
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  20% {
+    opacity: 0;
+  }
+  30% {
+    opacity: 1;
+  }
+  40% {
+    opacity: 0;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+@keyframes animate-slide-in-left {
+  from {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes animate-pulse-glow {
+  0%,
+  100% {
+    opacity: 1;
+    box-shadow: 0 0 20px rgba(0, 255, 157, 0.4);
+  }
+  50% {
+    opacity: 0.8;
+    box-shadow: 0 0 30px rgba(0, 255, 157, 0.6);
+  }
+}
+
+@keyframes animate-counter-up {
+  0% {
+    transform: translateY(20px) scale(0.8);
+    opacity: 0;
+  }
+  50% {
+    transform: translateY(-5px) scale(1.2);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes shadow-neon {
+  0% {
+    box-shadow: 0 0 20px rgba(0, 255, 157, 0.3);
+  }
+  100% {
+    box-shadow: 0 0 20px rgba(0, 255, 157, 0.3);
+  }
+}
+
+@keyframes shadow-neon-lg {
+  0% {
+    box-shadow: 0 0 20px rgba(0, 255, 157, 0.3);
+  }
+  100% {
+    box-shadow: 0 0 40px rgba(0, 255, 157, 0.4);
   }
 }

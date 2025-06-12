@@ -192,8 +192,8 @@ const LinkCard = ({ link, className }: LinkCardProps) => {
                 variant="outline"
                 className={cn(
                   "text-xs border-neon-green/40 text-neon-green hover:border-neon-green hover:shadow-neon transition-all duration-300 font-mono animate-flicker-in",
-                  `[animation-delay:${index * 100}ms]`,
                 )}
+                style={{ animationDelay: `${index * 100}ms` }}
               >
                 {tag}
               </Badge>
@@ -258,7 +258,7 @@ const LinkCard = ({ link, className }: LinkCardProps) => {
           </div>
 
           <div className="flex items-center gap-3">
-            {/* Comment Tooltip */}
+            {/* Comment/Description Button */}
             {link.description && (
               <TooltipProvider>
                 <Tooltip>
@@ -267,6 +267,9 @@ const LinkCard = ({ link, className }: LinkCardProps) => {
                       variant="ghost"
                       size="sm"
                       className="h-8 w-8 p-0 text-gray-400 hover:text-neon-green hover:bg-neon-green/10 transition-all duration-300 hover:scale-110"
+                      onClick={() => {
+                        alert(`Description: ${link.description}`);
+                      }}
                     >
                       <MessageCircle className="h-4 w-4" />
                     </Button>
@@ -277,9 +280,8 @@ const LinkCard = ({ link, className }: LinkCardProps) => {
                   >
                     <div className="space-y-1">
                       <p className="text-xs text-neon-green font-bold font-mono">
-                        Comment:
+                        Click to view description
                       </p>
-                      <p className="text-sm">{link.description}</p>
                     </div>
                   </TooltipContent>
                 </Tooltip>

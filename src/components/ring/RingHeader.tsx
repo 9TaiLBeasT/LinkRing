@@ -117,6 +117,7 @@ const RingHeader = ({
                     "relative group animate-flicker-in",
                     `[animation-delay:${index * 100}ms]`,
                   )}
+                  style={{ animationDelay: `${index * 100}ms` }}
                 >
                   <Avatar
                     className={cn(

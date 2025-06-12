@@ -73,7 +73,10 @@ const RingCard = ({ ring, onDelete, onLeave }: RingCardProps) => {
   };
 
   return (
-    <div className="hexagon-card relative p-8 h-48 flex flex-col justify-center items-center text-center group cursor-pointer">
+    <div
+      className="hexagon-card relative p-8 h-48 flex flex-col justify-center items-center text-center group cursor-pointer"
+      onClick={() => (window.location.href = `/ring/${ring.id}`)}
+    >
       <div className="absolute inset-0 bg-gradient-to-br from-neon-green/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
 
       {/* Ring Actions Menu */}
@@ -264,8 +267,9 @@ const DashboardGrid = ({ isLoading = false }: DashboardGridProps) => {
           {rings.map((ring, index) => (
             <div
               key={ring.id}
-              className="slide-in-bottom"
-              style={{ animationDelay: `${index * 0.1}s` }}
+              className="animate-slide-in-bottom"
+              style={{ animationDelay: `${index * 100}ms` }}
+              onClick={() => (window.location.href = `/ring/${ring.id}`)}
             >
               <RingCard ring={ring} onDelete={deleteRing} onLeave={leaveRing} />
             </div>

@@ -7,6 +7,9 @@ import Dashboard from "./components/pages/dashboard";
 import Success from "./components/pages/success";
 import Home from "./components/pages/home";
 import RingPage from "./components/pages/RingPage";
+import Explore from "./components/pages/Explore";
+import SavedLinks from "./components/pages/SavedLinks";
+import PostLink from "./components/pages/PostLink";
 import { AuthProvider, useAuth } from "../supabase/auth";
 import { Toaster } from "./components/ui/toaster";
 import { LoadingScreen, LoadingSpinner } from "./components/ui/loading-spinner";
@@ -42,10 +45,34 @@ function AppRoutes() {
         />
         <Route path="/success" element={<Success />} />
         <Route
+          path="/explore"
+          element={
+            <PrivateRoute>
+              <Explore />
+            </PrivateRoute>
+          }
+        />
+        <Route
           path="/ring/:id"
           element={
             <PrivateRoute>
               <RingPage />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/saved"
+          element={
+            <PrivateRoute>
+              <SavedLinks />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/post"
+          element={
+            <PrivateRoute>
+              <PostLink />
             </PrivateRoute>
           }
         />

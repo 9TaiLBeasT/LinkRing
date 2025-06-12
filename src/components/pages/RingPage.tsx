@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { useParams, Navigate } from "react-router-dom";
 import { LoadingScreen } from "@/components/ui/loading-spinner";
 import { useRingData } from "@/hooks/useRingData";
@@ -7,10 +7,40 @@ import LinkSubmissionForm from "@/components/ring/LinkSubmissionForm";
 import LinkCard from "@/components/ring/LinkCard";
 import { cn } from "@/lib/utils";
 import { useAuth } from "../../../supabase/auth";
+import Sidebar, { SidebarToggle } from "@/components/dashboard/layout/Sidebar";
 
 const RingPage = () => {
   const { id } = useParams<{ id: string }>();
   const { user } = useAuth();
+  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => {
+      const mobile = window.innerWidth < 768;
+      setIsMobile(mobile);
+      // Close sidebar by default on mobile
+      if (mobile) {
+        setSidebarOpen(false);
+      } else {
+        setSidebarOpen(true);
+      }
+    };
+
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
+
+  const toggleSidebar = () => {
+    setSidebarOpen(!sidebarOpen);
+  };
+
+  // Handle navigation to ring
+  const handleRingNavigation = (ringId: string) => {
+    // This would be handled by the router, but we can add any additional logic here
+    console.log("Navigating to ring:", ringId);
+  };
 
   if (!id) {
     return <Navigate to="/dashboard" replace />;
@@ -72,75 +102,99 @@ const RingPage = () => {
 
   return (
     <div className="min-h-screen bg-neon-dark">
-      {/* Ring Header */}
-      <RingHeader
-        ring={ring}
-        members={members}
-        linkCount={links.length}
-        onCopyInvite={copyInviteCode}
-      />
+      <SidebarToggle isOpen={sidebarOpen} onToggle={toggleSidebar} />
+      <div className="flex h-screen">
+        <Sidebar
+          isOpen={sidebarOpen}
+          onToggle={toggleSidebar}
+          activeItem="Ring"
+        />
+        <main
+          className={cn(
+            "flex-1 overflow-auto transition-all duration-300 ease-in-out",
+            isMobile ? "w-full" : sidebarOpen ? "ml-0" : "-ml-[280px]",
+          )}
+        >
+          <div className={cn("min-h-screen", isMobile ? "pt-16" : "pt-0")}>
+            {/* Ring Header */}
+            <RingHeader
+              ring={ring}
+              members={members}
+              linkCount={links.length}
+              onCopyInvite={copyInviteCode}
+            />
 
-      {/* Link Submission Form - Sticky */}
-      <div className="sticky top-0 z-20">
-        <LinkSubmissionForm onSubmit={handleShareLink} />
-      </div>
+            {/* Link Submission Form - Sticky */}
+            <div className="sticky top-0 z-20">
+              <LinkSubmissionForm onSubmit={handleShareLink} />
+            </div>
 
-      {/* Link Feed */}
-      <div className="max-w-4xl mx-auto p-6 pb-20">
-        <div className="space-y-6">
-          {links.length === 0 ? (
-            <div className="text-center py-16">
-              <div className="space-y-6 animate-flicker-in">
-                <div className="w-20 h-20 mx-auto rounded-full border-2 border-neon-green/30 flex items-center justify-center hover:border-neon-green hover:shadow-neon transition-all duration-300">
-                  <span className="text-3xl animate-pulse">🔗</span>
-                </div>
-                <h3
-                  className="text-2xl font-semibold text-white font-mono glitch-text"
-                  data-text="No links shared yet"
-                >
-                  No links shared yet
-                </h3>
-                <p className="text-gray-400 max-w-md mx-auto text-lg">
-                  Be the first to share a link with your ring! Paste a URL above
-                  to get started.
-                </p>
-                <div className="flex justify-center space-x-2 mt-8">
-                  <div className="w-2 h-2 bg-neon-green rounded-full animate-bounce [animation-delay:-0.3s]" />
-                  <div className="w-2 h-2 bg-neon-green rounded-full animate-bounce [animation-delay:-0.15s]" />
-                  <div className="w-2 h-2 bg-neon-green rounded-full animate-bounce" />
-                </div>
+            {/* Link Feed */}
+            <div
+              className={cn(
+                "max-w-4xl mx-auto pb-20",
+                isMobile ? "p-4" : "p-6",
+              )}
+            >
+              <div className="space-y-6">
+                {links.length === 0 ? (
+                  <div className="text-center py-16">
+                    <div className="space-y-6 animate-flicker-in">
+                      <div className="w-20 h-20 mx-auto rounded-full border-2 border-neon-green/30 flex items-center justify-center hover:border-neon-green hover:shadow-neon transition-all duration-300">
+                        <span className="text-3xl animate-pulse">🔗</span>
+                      </div>
+                      <h3
+                        className="text-2xl font-semibold text-white font-mono glitch-text"
+                        data-text="No links shared yet"
+                      >
+                        No links shared yet
+                      </h3>
+                      <p className="text-gray-400 max-w-md mx-auto text-lg">
+                        Be the first to share a link with your ring! Paste a URL
+                        above to get started.
+                      </p>
+                      <div className="flex justify-center space-x-2 mt-8">
+                        <div className="w-2 h-2 bg-neon-green rounded-full animate-bounce [animation-delay:-0.3s]" />
+                        <div className="w-2 h-2 bg-neon-green rounded-full animate-bounce [animation-delay:-0.15s]" />
+                        <div className="w-2 h-2 bg-neon-green rounded-full animate-bounce" />
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <>
+                    <div className="flex items-center justify-between mb-8 animate-slide-in-left">
+                      <h2
+                        className="text-2xl font-bold text-neon-green font-mono glitch-text"
+                        data-text="Link Feed"
+                      >
+                        Link Feed
+                      </h2>
+                      <div className="text-sm text-gray-400 bg-neon-gray/50 px-3 py-1 rounded-full border border-neon-green/20">
+                        {links.length} link{links.length !== 1 ? "s" : ""}{" "}
+                        shared
+                      </div>
+                    </div>
+
+                    <div className="space-y-4">
+                      {links.map((link, index) => (
+                        <div
+                          key={link.id}
+                          className={cn(
+                            "animate-flicker-in",
+                            // Stagger animation delay for first 10 items
+                            index < 10 && `[animation-delay:${index * 150}ms]`,
+                          )}
+                        >
+                          <LinkCard link={link} />
+                        </div>
+                      ))}
+                    </div>
+                  </>
+                )}
               </div>
             </div>
-          ) : (
-            <>
-              <div className="flex items-center justify-between mb-8 animate-slide-in-left">
-                <h2
-                  className="text-2xl font-bold text-neon-green font-mono glitch-text"
-                  data-text="Link Feed"
-                >
-                  Link Feed
-                </h2>
-                <div className="text-sm text-gray-400 bg-neon-gray/50 px-3 py-1 rounded-full border border-neon-green/20">
-                  {links.length} link{links.length !== 1 ? "s" : ""} shared
-                </div>
-              </div>
-
-              <div className="space-y-4">
-                {links.map((link, index) => (
-                  <LinkCard
-                    key={link.id}
-                    link={link}
-                    className={cn(
-                      "animate-flicker-in",
-                      // Stagger animation delay for first 10 items
-                      index < 10 && `[animation-delay:${index * 150}ms]`,
-                    )}
-                  />
-                ))}
-              </div>
-            </>
-          )}
-        </div>
+          </div>
+        </main>
       </div>
     </div>
   );

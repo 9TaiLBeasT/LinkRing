@@ -115,22 +115,38 @@ export function useRingData(ringId: string) {
       const membersWithUserData = await Promise.all(
         (membersData || []).map(async (member) => {
           try {
-            const { data: userData } = await supabase.auth.admin.getUserById(
-              member.user_id,
-            );
+            // Try to get user data from Supabase auth
+            const { data: userData, error } =
+              await supabase.auth.admin.getUserById(member.user_id);
+
+            if (error || !userData.user) {
+              // Fallback to basic member data
+              return {
+                ...member,
+                user_name: `Member ${member.user_id.slice(-4)}`,
+                user_email: null,
+                avatar_url: null,
+              };
+            }
+
             return {
               ...member,
               user_name:
                 userData.user?.user_metadata?.full_name ||
                 userData.user?.email?.split("@")[0] ||
-                "Anonymous",
+                `Member ${member.user_id.slice(-4)}`,
               user_email: userData.user?.email,
               avatar_url: userData.user?.user_metadata?.avatar_url,
             };
-          } catch {
+          } catch (error) {
+            console.warn(
+              "Failed to fetch user data for member:",
+              member.user_id,
+              error,
+            );
             return {
               ...member,
-              user_name: "Anonymous",
+              user_name: `Member ${member.user_id.slice(-4)}`,
               user_email: null,
               avatar_url: null,
             };
@@ -153,22 +169,38 @@ export function useRingData(ringId: string) {
       const linksWithUserData = await Promise.all(
         (linksData || []).map(async (link) => {
           try {
-            const { data: userData } = await supabase.auth.admin.getUserById(
-              link.user_id,
-            );
+            // Try to get user data from Supabase auth
+            const { data: userData, error } =
+              await supabase.auth.admin.getUserById(link.user_id);
+
+            if (error || !userData.user) {
+              // Fallback to basic user data
+              return {
+                ...link,
+                user_name: `User ${link.user_id.slice(-4)}`,
+                user_email: null,
+                avatar_url: null,
+              };
+            }
+
             return {
               ...link,
               user_name:
                 userData.user?.user_metadata?.full_name ||
                 userData.user?.email?.split("@")[0] ||
-                "Anonymous",
+                `User ${link.user_id.slice(-4)}`,
               user_email: userData.user?.email,
               avatar_url: userData.user?.user_metadata?.avatar_url,
             };
-          } catch {
+          } catch (error) {
+            console.warn(
+              "Failed to fetch user data for link:",
+              link.user_id,
+              error,
+            );
             return {
               ...link,
-              user_name: "Anonymous",
+              user_name: `User ${link.user_id.slice(-4)}`,
               user_email: null,
               avatar_url: null,
             };

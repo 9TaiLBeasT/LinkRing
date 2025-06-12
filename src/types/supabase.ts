@@ -71,6 +71,35 @@ export type Database = {
         }
         Relationships: []
       }
+      saved_links: {
+        Row: {
+          created_at: string | null
+          id: string
+          link_id: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          link_id?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          link_id?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "saved_links_link_id_fkey"
+            columns: ["link_id"]
+            isOneToOne: false
+            referencedRelation: "shared_links"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       shared_links: {
         Row: {
           created_at: string | null
