@@ -11,6 +11,7 @@ import Explore from "./components/pages/Explore";
 import SavedLinks from "./components/pages/SavedLinks";
 import PostLink from "./components/pages/PostLink";
 import Leaderboard from "./components/pages/Leaderboard";
+import WeeklyDigest from "./components/pages/WeeklyDigest";
 import { AuthProvider, useAuth } from "../supabase/auth";
 import { Toaster } from "./components/ui/toaster";
 import { LoadingScreen, LoadingSpinner } from "./components/ui/loading-spinner";
@@ -83,6 +84,14 @@ function AppRoutes() {
           element={
             <PrivateRoute>
               <Leaderboard />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/weekly-digest"
+          element={
+            <PrivateRoute>
+              <WeeklyDigest />
             </PrivateRoute>
           }
         />

@@ -18,6 +18,7 @@ import {
   UserPlus,
   Menu,
   X,
+  Mail,
 } from "lucide-react";
 import { useRings } from "@/hooks/useRings";
 import CreateRingDialog from "../CreateRingDialog";
@@ -42,7 +43,7 @@ const defaultNavItems: NavItem[] = [
   { icon: <LayoutDashboard size={20} />, label: "Dashboard", isActive: true },
   { icon: <Search size={20} />, label: "Explore" },
   { icon: <BarChart3 size={20} />, label: "Leaderboard" },
-  { icon: <Settings size={20} />, label: "Settings" },
+  { icon: <Mail size={20} />, label: "Weekly Digest" },
 ];
 
 const defaultBottomItems: NavItem[] = [
@@ -85,6 +86,8 @@ const Sidebar = ({
       navigate("/explore");
     } else if (label === "Leaderboard") {
       navigate("/leaderboard");
+    } else if (label === "Weekly Digest") {
+      navigate("/weekly-digest");
     } else if (label === "Settings") {
       // Handle settings navigation if needed
     }
