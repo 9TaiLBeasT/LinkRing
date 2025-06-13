@@ -83,6 +83,8 @@ const Sidebar = ({
       navigate("/dashboard");
     } else if (label === "Explore") {
       navigate("/explore");
+    } else if (label === "Leaderboard") {
+      navigate("/leaderboard");
     } else if (label === "Settings") {
       // Handle settings navigation if needed
     }

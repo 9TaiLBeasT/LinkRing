@@ -10,6 +10,7 @@ import RingPage from "./components/pages/RingPage";
 import Explore from "./components/pages/Explore";
 import SavedLinks from "./components/pages/SavedLinks";
 import PostLink from "./components/pages/PostLink";
+import Leaderboard from "./components/pages/Leaderboard";
 import { AuthProvider, useAuth } from "../supabase/auth";
 import { Toaster } from "./components/ui/toaster";
 import { LoadingScreen, LoadingSpinner } from "./components/ui/loading-spinner";
@@ -31,6 +32,7 @@ function PrivateRoute({ children }: { children: React.ReactNode }) {
 function AppRoutes() {
   return (
     <>
+      {import.meta.env.VITE_TEMPO === "true" && useRoutes(routes)}
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<LoginForm />} />
@@ -76,8 +78,16 @@ function AppRoutes() {
             </PrivateRoute>
           }
         />
+        <Route
+          path="/leaderboard"
+          element={
+            <PrivateRoute>
+              <Leaderboard />
+            </PrivateRoute>
+          }
+        />
+        {import.meta.env.VITE_TEMPO === "true" && <Route path="/tempobook/*" />}
       </Routes>
-      {import.meta.env.VITE_TEMPO === "true" && useRoutes(routes)}
     </>
   );
 }

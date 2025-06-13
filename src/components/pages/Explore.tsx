@@ -693,7 +693,7 @@ const Explore = () => {
           <main
             className={cn(
               "flex-1 overflow-auto transition-all duration-300 ease-in-out",
-              isMobile ? "w-full" : sidebarOpen ? "ml-0" : "-ml-[280px]",
+              isMobile ? "w-full" : "",
             )}
           >
             {/* Header */}
@@ -982,48 +982,46 @@ const Explore = () => {
               </div>
             </div>
 
-            {/* Mobile Bottom Navigation */}
-            {isMobile && (
-              <div className="fixed bottom-0 left-0 right-0 bg-neon-dark/95 backdrop-blur-md border-t border-neon-green/20 p-4 z-50">
-                <div className="flex justify-around">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="flex flex-col items-center gap-1 text-neon-green"
-                  >
-                    <Search className="h-4 w-4" />
-                    <span className="text-xs">Explore</span>
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="flex flex-col items-center gap-1 text-gray-400 hover:text-neon-green"
-                    onClick={() => navigate("/dashboard")}
-                  >
-                    <Users className="h-4 w-4" />
-                    <span className="text-xs">Rings</span>
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="flex flex-col items-center gap-1 text-gray-400 hover:text-neon-green"
-                    onClick={() => navigate("/post")}
-                  >
-                    <Zap className="h-4 w-4" />
-                    <span className="text-xs">Post</span>
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="flex flex-col items-center gap-1 text-gray-400 hover:text-neon-green"
-                    onClick={() => navigate("/saved")}
-                  >
-                    <Bookmark className="h-4 w-4" />
-                    <span className="text-xs">Saved</span>
-                  </Button>
-                </div>
+            {/* Bottom Navigation */}
+            <div className="fixed bottom-0 left-0 right-0 bg-neon-dark/95 backdrop-blur-md border-t border-neon-green/20 p-4 z-50">
+              <div className="flex justify-around">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="flex flex-col items-center gap-1 text-neon-green"
+                >
+                  <Search className="h-4 w-4" />
+                  <span className="text-xs">Explore</span>
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="flex flex-col items-center gap-1 text-gray-400 hover:text-neon-green"
+                  onClick={() => navigate("/dashboard")}
+                >
+                  <Users className="h-4 w-4" />
+                  <span className="text-xs">Rings</span>
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="flex flex-col items-center gap-1 text-gray-400 hover:text-neon-green"
+                  onClick={() => navigate("/post")}
+                >
+                  <Zap className="h-4 w-4" />
+                  <span className="text-xs">Post</span>
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="flex flex-col items-center gap-1 text-gray-400 hover:text-neon-green"
+                  onClick={() => navigate("/saved")}
+                >
+                  <Bookmark className="h-4 w-4" />
+                  <span className="text-xs">Saved</span>
+                </Button>
               </div>
-            )}
+            </div>
           </main>
         </div>
       </TooltipProvider>
