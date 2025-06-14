@@ -110,37 +110,48 @@ export default function LandingPage() {
       <main className="pt-16">
         {/* Hero Section */}
         <section className="relative py-32 text-center overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-br from-neon-green/5 to-transparent"></div>
+          <div className="absolute inset-0 bg-gradient-to-br from-neon-green/5 via-purple-500/5 to-transparent animate-pulse"></div>
+          <div className="absolute inset-0">
+            <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-neon-green/10 rounded-full blur-3xl animate-pulse"></div>
+            <div
+              className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl animate-pulse"
+              style={{ animationDelay: "1s" }}
+            ></div>
+          </div>
           <div className="relative z-10">
             <h1 className="text-7xl font-bold tracking-tight mb-6 text-white">
-              <span className="glitch-text" data-text="Build your private">
-                Build your private
-              </span>{" "}
-              <span
-                className="text-neon-green animate-glow glitch-text"
-                data-text="link ring"
-              >
+              <span className="animate-slide-in-left">Build your private</span>{" "}
+              <span className="text-neon-green bg-gradient-to-r from-neon-green to-emerald-400 bg-clip-text text-transparent animate-pulse-glow">
                 link ring
               </span>
             </h1>
-            <h2 className="text-3xl font-medium text-neon-green/80 mb-8 max-w-4xl mx-auto">
+            <h2
+              className="text-3xl font-medium text-neon-green/80 mb-8 max-w-4xl mx-auto animate-slide-in-right"
+              style={{ animationDelay: "0.3s" }}
+            >
               Private Link-Sharing Circles for the Digital Underground
             </h2>
-            <p className="text-xl text-gray-300 mb-12 max-w-2xl mx-auto leading-relaxed">
+            <p
+              className="text-xl text-gray-300 mb-12 max-w-2xl mx-auto leading-relaxed animate-slide-in-bottom"
+              style={{ animationDelay: "0.6s" }}
+            >
               Create secure, invite-only rings to share links with your trusted
               network. Experience the future of private collaboration with
               neon-powered aesthetics.
             </p>
-            <div className="flex justify-center space-x-8 mb-16">
+            <div
+              className="flex justify-center space-x-8 mb-16 animate-slide-in-bottom"
+              style={{ animationDelay: "0.9s" }}
+            >
               <Link to="/signup">
-                <Button className="neon-button ripple-effect font-bold px-8 py-4 text-lg rounded-full">
+                <Button className="neon-button ripple-effect font-bold px-8 py-4 text-lg rounded-full transform hover:scale-105 transition-all duration-300 shadow-neon-lg hover:shadow-neon-xl">
                   Start Sharing → <ChevronRight className="ml-2 h-5 w-5" />
                 </Button>
               </Link>
               <Link to="/login">
                 <Button
                   variant="outline"
-                  className="border-neon-green text-neon-green hover:bg-neon-green/10 font-bold px-8 py-4 text-lg transition-all duration-300 rounded-full"
+                  className="border-neon-green text-neon-green hover:bg-neon-green/10 font-bold px-8 py-4 text-lg transition-all duration-300 rounded-full transform hover:scale-105 hover:shadow-neon"
                 >
                   Join Existing Ring
                 </Button>
@@ -191,19 +202,49 @@ export default function LandingPage() {
             </div>
           </div>
 
-          {/* Animated Background Elements */}
-          <div className="absolute top-20 left-10 w-2 h-2 bg-neon-green rounded-full animate-pulse"></div>
+          {/* Enhanced Animated Background Elements */}
+          <div className="absolute top-20 left-10 w-3 h-3 bg-neon-green rounded-full animate-pulse shadow-neon"></div>
           <div
-            className="absolute top-40 right-20 w-1 h-1 bg-neon-green rounded-full animate-pulse"
+            className="absolute top-32 left-16 w-1 h-1 bg-purple-400 rounded-full animate-pulse"
+            style={{ animationDelay: "0.3s" }}
+          ></div>
+          <div
+            className="absolute top-40 right-20 w-2 h-2 bg-neon-green rounded-full animate-pulse shadow-neon"
             style={{ animationDelay: "0.5s" }}
           ></div>
           <div
-            className="absolute bottom-20 left-1/4 w-1.5 h-1.5 bg-neon-green rounded-full animate-pulse"
+            className="absolute top-52 right-32 w-1 h-1 bg-cyan-400 rounded-full animate-pulse"
+            style={{ animationDelay: "0.8s" }}
+          ></div>
+          <div
+            className="absolute bottom-20 left-1/4 w-2.5 h-2.5 bg-neon-green rounded-full animate-pulse shadow-neon"
             style={{ animationDelay: "1s" }}
           ></div>
           <div
-            className="absolute bottom-40 right-1/3 w-1 h-1 bg-neon-green rounded-full animate-pulse"
+            className="absolute bottom-32 left-1/3 w-1 h-1 bg-emerald-400 rounded-full animate-pulse"
+            style={{ animationDelay: "1.3s" }}
+          ></div>
+          <div
+            className="absolute bottom-40 right-1/3 w-2 h-2 bg-neon-green rounded-full animate-pulse shadow-neon"
             style={{ animationDelay: "1.5s" }}
+          ></div>
+          <div
+            className="absolute bottom-52 right-1/4 w-1 h-1 bg-teal-400 rounded-full animate-pulse"
+            style={{ animationDelay: "1.8s" }}
+          ></div>
+
+          {/* Floating geometric shapes */}
+          <div
+            className="absolute top-1/3 left-8 w-4 h-4 border border-neon-green/50 rotate-45 animate-spin"
+            style={{ animationDuration: "8s" }}
+          ></div>
+          <div
+            className="absolute top-2/3 right-8 w-6 h-6 border border-purple-400/50 rotate-12 animate-spin"
+            style={{ animationDuration: "12s", animationDirection: "reverse" }}
+          ></div>
+          <div
+            className="absolute top-1/2 left-1/6 w-3 h-3 border border-cyan-400/50 rotate-45 animate-spin"
+            style={{ animationDuration: "10s" }}
           ></div>
         </section>
 

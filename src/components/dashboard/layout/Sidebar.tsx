@@ -89,7 +89,9 @@ const Sidebar = ({
     } else if (label === "Weekly Digest") {
       navigate("/weekly-digest");
     } else if (label === "Settings") {
-      // Handle settings navigation if needed
+      navigate("/settings");
+    } else if (label === "Help") {
+      navigate("/help");
     }
   };
 

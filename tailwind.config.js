@@ -85,13 +85,7 @@ module.exports = {
             boxShadow: "0 0 30px rgba(0, 255, 157, 0.6)",
           },
         },
-        glitch: {
-          "0%, 100%": { transform: "translate(0)" },
-          "20%": { transform: "translate(-2px, 2px)" },
-          "40%": { transform: "translate(-2px, -2px)" },
-          "60%": { transform: "translate(2px, 2px)" },
-          "80%": { transform: "translate(2px, -2px)" },
-        },
+
         "slide-in-left": {
           "0%": { transform: "translateX(-100%)", opacity: "0" },
           "100%": { transform: "translateX(0)", opacity: "1" },
@@ -131,7 +125,7 @@ module.exports = {
         "accordion-up": "accordion-up 0.2s ease-out",
         glow: "glow 2s ease-in-out infinite alternate",
         "pulse-glow": "pulse-glow 1.5s ease-in-out infinite",
-        glitch: "glitch 2s infinite",
+
         "slide-in-left": "slide-in-left 0.6s ease-out",
         "slide-in-right": "slide-in-right 0.6s ease-out",
         "slide-in-bottom": "slide-in-bottom 0.6s ease-out",

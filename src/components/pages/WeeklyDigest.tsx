@@ -12,82 +12,72 @@ import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import Sidebar, { SidebarToggle } from "@/components/dashboard/layout/Sidebar";
 import {
-  Mail,
+  Calendar,
   TrendingUp,
   Users,
   Heart,
   MessageCircle,
   Share2,
   ExternalLink,
-  Calendar,
   Crown,
+  Flame,
+  Target,
+  Zap,
+  Trophy,
+  Star,
+  Eye,
+  Link,
+  Activity,
+  Hash,
+  ArrowUp,
+  ArrowDown,
+  History,
+  Gift,
+  Brain,
+  Globe,
+  ChevronRight,
 } from "lucide-react";
 
 const WeeklyDigest = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
-  // Mock data for the weekly digest
+  // Weekly data structure - to be populated with real data from API
   const weeklyData = {
-    topLinks: [
-      {
-        id: 1,
-        title: "The Future of Web Development",
-        url: "https://example.com/future-web-dev",
-        reactions: 45,
-        comments: 12,
-        shares: 8,
-        submittedBy: "Alice Chen",
-      },
-      {
-        id: 2,
-        title: "AI Tools That Will Change Everything",
-        url: "https://example.com/ai-tools",
-        reactions: 38,
-        comments: 9,
-        shares: 15,
-        submittedBy: "Bob Wilson",
-      },
-      {
-        id: 3,
-        title: "Building Scalable React Applications",
-        url: "https://example.com/scalable-react",
-        reactions: 32,
-        comments: 7,
-        shares: 6,
-        submittedBy: "Carol Davis",
-      },
-      {
-        id: 4,
-        title: "The Rise of Edge Computing",
-        url: "https://example.com/edge-computing",
-        reactions: 28,
-        comments: 5,
-        shares: 4,
-        submittedBy: "David Kim",
-      },
-      {
-        id: 5,
-        title: "Cybersecurity Best Practices 2024",
-        url: "https://example.com/cybersecurity",
-        reactions: 25,
-        comments: 8,
-        shares: 3,
-        submittedBy: "Eve Rodriguez",
-      },
-    ],
-    topContributor: {
-      name: "Alice Chen",
-      avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=alice",
-      linksShared: 12,
-      totalReactions: 156,
+    weekRange: "This Week",
+    userStats: {
+      linksShared: 0,
+      reactionsReceived: 0,
+      ringsActiveIn: 0,
+      badgesEarned: 0,
+      streakDays: 0,
+      rankChange: 0,
+      currentRank: 0,
     },
-    reactionsSummary: {
-      totalReactions: 324,
-      totalComments: 89,
-      totalShares: 67,
-      mostPopularDay: "Wednesday",
-    },
-    weekRange: "Dec 16 - Dec 22, 2024",
+    hasActivity: false, // Flag to show/hide sections with no data
+  };
+
+  const getActivityColor = (level: string) => {
+    switch (level) {
+      case "high":
+        return "border-neon-green/50 bg-neon-green/10";
+      case "medium":
+        return "border-yellow-500/50 bg-yellow-500/10";
+      case "low":
+        return "border-red-500/50 bg-red-500/10";
+      default:
+        return "border-gray-500/50 bg-gray-500/10";
+    }
+  };
+
+  const getTrendIcon = (trend: string) => {
+    switch (trend) {
+      case "up":
+        return <ArrowUp className="h-3 w-3 text-neon-green" />;
+      case "down":
+        return <ArrowDown className="h-3 w-3 text-red-500" />;
+      default:
+        return <div className="h-3 w-3" />;
+    }
   };
 
   return (
@@ -105,203 +95,333 @@ const WeeklyDigest = () => {
 
       <div className="flex-1 p-6 md:p-8 overflow-auto">
         <div className="max-w-6xl mx-auto space-y-8">
-          {/* Header */}
-          <div className="text-center space-y-4">
-            <div className="flex items-center justify-center gap-3">
-              <Mail className="h-8 w-8 text-neon-green" />
-              <h1
-                className="text-4xl font-bold text-neon-green glitch-text"
-                data-text="Weekly Digest"
-              >
-                Weekly Digest
+          {/* Neon Header with Wave Animation */}
+          <div className="text-center space-y-4 relative">
+            <div className="absolute inset-0 bg-gradient-to-r from-neon-green/10 via-transparent to-neon-green/10 animate-pulse" />
+            <div className="relative">
+              <h1 className="text-5xl font-bold text-neon-green mb-2 animate-glow">
+                Week in Links
               </h1>
-            </div>
-            <p className="text-gray-400 text-lg">
-              Your ring's top content from {weeklyData.weekRange}
-            </p>
-            <div className="flex items-center justify-center gap-2 text-sm text-neon-green/70">
-              <Calendar className="h-4 w-4" />
-              <span>Delivered every Sunday night</span>
+              <p className="text-2xl text-gray-300 font-light">
+                {weeklyData.weekRange}
+              </p>
+              <div className="flex items-center justify-center gap-2 mt-4 text-sm text-neon-green/70">
+                <Calendar className="h-4 w-4" />
+                <span>Your digital journey recap</span>
+              </div>
             </div>
           </div>
 
-          {/* Top 5 Links */}
-          <Card className="bg-neon-gray/50 border-neon-green/20">
+          {/* User Stats Panel */}
+          <Card className="bg-gradient-to-br from-neon-gray/50 to-neon-dark/50 border-neon-green/30 shadow-neon">
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-neon-green">
-                <TrendingUp className="h-5 w-5" />
-                Top 5 Links of the Week
+                <Activity className="h-5 w-5" />
+                Your Weekly Stats
               </CardTitle>
-              <CardDescription className="text-gray-400">
-                The most popular links shared in your rings
-              </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
-                {weeklyData.topLinks.map((link, index) => (
-                  <div
-                    key={link.id}
-                    className="flex items-start gap-4 p-4 rounded-xl bg-neon-dark/50 border border-neon-green/10 hover:border-neon-green/30 transition-all duration-300 group"
-                  >
-                    <div className="flex-shrink-0">
-                      <Badge
-                        variant="outline"
-                        className={`w-8 h-8 rounded-full flex items-center justify-center font-bold ${
-                          index === 0
-                            ? "bg-yellow-500/20 text-yellow-500 border-yellow-500/30"
-                            : index === 1
-                              ? "bg-gray-400/20 text-gray-400 border-gray-400/30"
-                              : index === 2
-                                ? "bg-orange-500/20 text-orange-500 border-orange-500/30"
-                                : "bg-neon-green/20 text-neon-green border-neon-green/30"
-                        }`}
-                      >
-                        {index + 1}
-                      </Badge>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="bg-neon-dark/50 p-4 rounded-xl border border-neon-green/20 hover:border-neon-green/40 transition-all group">
+                  <div className="flex items-center gap-3">
+                    <Link className="h-6 w-6 text-neon-green group-hover:animate-pulse" />
+                    <div>
+                      <div className="text-2xl font-bold text-white">
+                        {weeklyData.userStats.linksShared}
+                      </div>
+                      <div className="text-xs text-gray-400">Links Shared</div>
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <h3 className="font-semibold text-white group-hover:text-neon-green transition-colors">
-                        {link.title}
-                      </h3>
-                      <p className="text-sm text-gray-400 mt-1">
-                        Shared by {link.submittedBy}
-                      </p>
-                      <div className="flex items-center gap-4 mt-2 text-xs text-gray-500">
-                        <span className="flex items-center gap-1">
-                          <Heart className="h-3 w-3" />
-                          {link.reactions}
-                        </span>
-                        <span className="flex items-center gap-1">
-                          <MessageCircle className="h-3 w-3" />
-                          {link.comments}
-                        </span>
-                        <span className="flex items-center gap-1">
-                          <Share2 className="h-3 w-3" />
-                          {link.shares}
-                        </span>
+                  </div>
+                </div>
+                <div className="bg-neon-dark/50 p-4 rounded-xl border border-neon-green/20 hover:border-neon-green/40 transition-all group">
+                  <div className="flex items-center gap-3">
+                    <Heart className="h-6 w-6 text-red-500 group-hover:animate-pulse" />
+                    <div>
+                      <div className="text-2xl font-bold text-white">
+                        {weeklyData.userStats.reactionsReceived}
+                      </div>
+                      <div className="text-xs text-gray-400">Reactions</div>
+                    </div>
+                  </div>
+                </div>
+                <div className="bg-neon-dark/50 p-4 rounded-xl border border-neon-green/20 hover:border-neon-green/40 transition-all group">
+                  <div className="flex items-center gap-3">
+                    <Flame className="h-6 w-6 text-orange-500 group-hover:animate-pulse" />
+                    <div>
+                      <div className="text-2xl font-bold text-white">
+                        {weeklyData.userStats.streakDays}
+                      </div>
+                      <div className="text-xs text-gray-400">Day Streak</div>
+                    </div>
+                  </div>
+                </div>
+                <div className="bg-neon-dark/50 p-4 rounded-xl border border-neon-green/20 hover:border-neon-green/40 transition-all group">
+                  <div className="flex items-center gap-3">
+                    <Trophy className="h-6 w-6 text-yellow-500 group-hover:animate-pulse" />
+                    <div>
+                      <div className="text-2xl font-bold text-white">
+                        #{weeklyData.userStats.currentRank}
+                      </div>
+                      <div className="text-xs text-gray-400 flex items-center gap-1">
+                        Rank
+                        {weeklyData.userStats.rankChange > 0 && (
+                          <ArrowUp className="h-3 w-3 text-neon-green" />
+                        )}
                       </div>
                     </div>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="opacity-0 group-hover:opacity-100 transition-opacity text-neon-green hover:bg-neon-green/10"
-                      onClick={() => window.open(link.url, "_blank")}
-                    >
-                      <ExternalLink className="h-4 w-4" />
-                    </Button>
                   </div>
-                ))}
+                </div>
               </div>
             </CardContent>
           </Card>
 
-          <div className="grid md:grid-cols-2 gap-6">
-            {/* Top Contributor */}
+          {/* No Activity Message */}
+          {!weeklyData.hasActivity && (
+            <Card className="bg-gradient-to-r from-neon-green/10 to-blue-500/10 border-neon-green/30">
+              <CardContent className="p-8 text-center">
+                <div className="space-y-4">
+                  <div className="text-6xl mb-4">📊</div>
+                  <h3 className="text-2xl font-bold text-neon-green">
+                    Your Weekly Summary
+                  </h3>
+                  <p className="text-gray-300 text-lg max-w-md mx-auto">
+                    Start sharing links and engaging with your rings to see your
+                    weekly activity here!
+                  </p>
+                  <Button className="neon-button mt-6">
+                    <Link className="h-4 w-4 mr-2" />
+                    Share Your First Link
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Activity Placeholder - Hidden when no data */}
+          {weeklyData.hasActivity && (
+            <div className="grid lg:grid-cols-2 gap-6">
+              {/* Top Shared Link */}
+              <Card className="bg-neon-gray/50 border-neon-green/20 hover:border-neon-green/40 transition-all group">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2 text-neon-green">
+                    <TrendingUp className="h-5 w-5" />
+                    🏆 Your Top Link
+                  </CardTitle>
+                  <CardDescription className="text-gray-400">
+                    Most reactions on your shared content
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="p-8 text-center text-gray-400">
+                    <Link className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                    <p>No links shared this week</p>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Most Loved Link */}
+              <Card className="bg-neon-gray/50 border-neon-green/20 hover:border-neon-green/40 transition-all group">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2 text-neon-green">
+                    <Eye className="h-5 w-5" />
+                    ❤️ Most Loved Link You Saw
+                  </CardTitle>
+                  <CardDescription className="text-gray-400">
+                    The link you opened with most reactions
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="p-8 text-center text-gray-400">
+                    <Heart className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                    <p>No activity to show yet</p>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          )}
+
+          {/* Ring Activity Snapshot */}
+          <Card className="bg-neon-gray/50 border-neon-green/20">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-neon-green">
+                <Users className="h-5 w-5" />
+                Ring Activity Snapshot
+              </CardTitle>
+              <CardDescription className="text-gray-400">
+                How your rings performed this week
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="p-8 text-center text-gray-400">
+                <Users className="h-16 w-16 mx-auto mb-4 opacity-50" />
+                <p className="text-lg mb-2">No ring activity this week</p>
+                <p className="text-sm">
+                  Join or create rings to see activity here
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+
+          <div className="grid lg:grid-cols-2 gap-6">
+            {/* Trending Tags */}
             <Card className="bg-neon-gray/50 border-neon-green/20">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-neon-green">
-                  <Crown className="h-5 w-5" />
-                  Top Contributor
+                  <Hash className="h-5 w-5" />
+                  Your Trending Tags
                 </CardTitle>
                 <CardDescription className="text-gray-400">
-                  Your ring's most active member this week
+                  Tags you used most this week
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="flex items-center gap-4">
-                  <div className="relative">
-                    <img
-                      src={weeklyData.topContributor.avatar}
-                      alt={weeklyData.topContributor.name}
-                      className="w-16 h-16 rounded-full border-2 border-neon-green/30"
-                    />
-                    <div className="absolute -top-1 -right-1 w-6 h-6 bg-yellow-500 rounded-full flex items-center justify-center">
-                      <Crown className="h-3 w-3 text-yellow-900" />
-                    </div>
-                  </div>
-                  <div className="flex-1">
-                    <h3 className="font-semibold text-white text-lg">
-                      {weeklyData.topContributor.name}
-                    </h3>
-                    <div className="space-y-1 mt-2">
-                      <div className="flex justify-between text-sm">
-                        <span className="text-gray-400">Links shared:</span>
-                        <span className="text-neon-green font-medium">
-                          {weeklyData.topContributor.linksShared}
-                        </span>
-                      </div>
-                      <div className="flex justify-between text-sm">
-                        <span className="text-gray-400">Total reactions:</span>
-                        <span className="text-neon-green font-medium">
-                          {weeklyData.topContributor.totalReactions}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
+                <div className="p-8 text-center text-gray-400">
+                  <Hash className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                  <p>No tags used this week</p>
                 </div>
               </CardContent>
             </Card>
 
-            {/* Reactions Summary */}
+            {/* Top Friends */}
             <Card className="bg-neon-gray/50 border-neon-green/20">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-neon-green">
-                  <Heart className="h-5 w-5" />
-                  Reactions Summary
+                  <Crown className="h-5 w-5" />
+                  Top Friends This Week
                 </CardTitle>
                 <CardDescription className="text-gray-400">
-                  Community engagement this week
+                  Most active members in your rings
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="space-y-4">
-                  <div className="grid grid-cols-3 gap-4">
-                    <div className="text-center">
-                      <div className="text-2xl font-bold text-neon-green">
-                        {weeklyData.reactionsSummary.totalReactions}
-                      </div>
-                      <div className="text-xs text-gray-400">Reactions</div>
-                    </div>
-                    <div className="text-center">
-                      <div className="text-2xl font-bold text-neon-green">
-                        {weeklyData.reactionsSummary.totalComments}
-                      </div>
-                      <div className="text-xs text-gray-400">Comments</div>
-                    </div>
-                    <div className="text-center">
-                      <div className="text-2xl font-bold text-neon-green">
-                        {weeklyData.reactionsSummary.totalShares}
-                      </div>
-                      <div className="text-xs text-gray-400">Shares</div>
-                    </div>
-                  </div>
-                  <Separator className="bg-neon-green/20" />
-                  <div className="text-center">
-                    <p className="text-sm text-gray-400">
-                      Most active day:{" "}
-                      <span className="text-neon-green font-medium">
-                        {weeklyData.reactionsSummary.mostPopularDay}
-                      </span>
-                    </p>
-                  </div>
+                <div className="p-8 text-center text-gray-400">
+                  <Users className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                  <p>No friend activity to show</p>
                 </div>
               </CardContent>
             </Card>
           </div>
 
-          {/* Call to Action */}
-          <Card className="bg-gradient-to-r from-neon-green/10 to-neon-green/5 border-neon-green/30">
-            <CardContent className="p-6 text-center">
-              <h3 className="text-xl font-semibold text-neon-green mb-2">
-                Ready to explore more?
-              </h3>
-              <p className="text-gray-400 mb-4">
-                Dive back into your rings and discover what's trending now
-              </p>
-              <Button className="neon-button">
-                <ExternalLink className="h-4 w-4 mr-2" />
-                View More in App
-              </Button>
+          {/* Streak Status */}
+          <Card className="bg-gradient-to-br from-orange-500/20 via-red-500/10 to-pink-500/20 border-orange-500/40 rounded-2xl overflow-hidden">
+            <CardContent className="p-8">
+              <div className="flex items-center gap-6">
+                <div className="relative">
+                  <div className="absolute inset-0 bg-orange-500/20 rounded-full animate-pulse" />
+                  <Flame className="h-12 w-12 text-orange-500 relative z-10" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-2xl font-bold text-orange-400 mb-2">
+                    Start Your Sharing Streak!
+                  </h3>
+                  <p className="text-gray-300 text-lg mb-4">
+                    Share your first link to begin building your daily streak.
+                  </p>
+                  <div className="flex gap-2 mb-4">
+                    {Array.from({ length: 7 }, (_, i) => (
+                      <div
+                        key={i}
+                        className="h-3 w-10 rounded-full bg-gray-600/50 border border-gray-500/30"
+                      />
+                    ))}
+                  </div>
+                  <Button className="bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white border-0 rounded-xl px-6 py-2">
+                    <Zap className="h-4 w-4 mr-2" />
+                    Share First Link
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Weekly Insights */}
+          <Card className="bg-gradient-to-br from-purple-500/20 via-blue-500/10 to-cyan-500/20 border-purple-500/40 rounded-2xl overflow-hidden">
+            <CardContent className="p-8">
+              <div className="flex items-center gap-6">
+                <div className="relative">
+                  <div className="absolute inset-0 bg-purple-500/20 rounded-full animate-pulse" />
+                  <Brain className="h-12 w-12 text-purple-400 relative z-10" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-2xl font-bold text-purple-400 mb-3">
+                    Weekly Insights
+                  </h3>
+                  <p className="text-gray-300 text-lg mb-4">
+                    Your personalized insights will appear here once you start
+                    sharing and engaging with content.
+                  </p>
+                  <div className="flex items-center gap-4 text-sm text-gray-400">
+                    <div className="flex items-center gap-2">
+                      <Globe className="h-4 w-4" />
+                      <span>0 sources explored</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Target className="h-4 w-4" />
+                      <span>0 insights generated</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Rank Status */}
+          <Card className="bg-gradient-to-br from-neon-green/20 via-blue-500/10 to-teal-500/20 border-neon-green/40 rounded-2xl overflow-hidden">
+            <CardContent className="p-8">
+              <div className="flex items-center gap-6">
+                <div className="relative">
+                  <div className="absolute inset-0 bg-neon-green/20 rounded-full animate-pulse" />
+                  <Trophy className="h-12 w-12 text-neon-green relative z-10" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-2xl font-bold text-neon-green mb-3">
+                    Your Ranking Journey
+                  </h3>
+                  <p className="text-gray-300 text-lg mb-4">
+                    Start sharing links and engaging with your community to
+                    climb the leaderboard!
+                  </p>
+                  <div className="flex items-center gap-4">
+                    <div className="bg-neon-dark/50 px-4 py-2 rounded-xl border border-neon-green/30">
+                      <span className="text-neon-green font-bold text-lg">
+                        Unranked
+                      </span>
+                    </div>
+                    <Button className="bg-gradient-to-r from-neon-green/20 to-blue-500/20 hover:from-neon-green/30 hover:to-blue-500/30 text-neon-green border border-neon-green/30 rounded-xl">
+                      <Star className="h-4 w-4 mr-2" />
+                      View Leaderboard
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Link History CTA */}
+          <Card className="bg-gradient-to-br from-neon-green/10 via-transparent to-blue-500/10 border-neon-green/30 hover:border-neon-green/50 transition-all group cursor-pointer rounded-2xl overflow-hidden">
+            <CardContent className="p-8">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-6">
+                  <div className="relative">
+                    <div className="absolute inset-0 bg-neon-green/10 rounded-full animate-pulse" />
+                    <History className="h-12 w-12 text-neon-green relative z-10" />
+                  </div>
+                  <div>
+                    <h3 className="text-2xl font-bold text-neon-green mb-2">
+                      Explore Your Link History
+                    </h3>
+                    <p className="text-gray-300 text-lg">
+                      Dive into your complete archive of shared links and
+                      discoveries
+                    </p>
+                  </div>
+                </div>
+                <Button className="bg-gradient-to-r from-neon-green/20 to-blue-500/20 hover:from-neon-green/30 hover:to-blue-500/30 text-neon-green border border-neon-green/30 rounded-xl px-6 py-3 group-hover:scale-105 transition-all">
+                  <History className="h-5 w-5 mr-2" />
+                  View All Links
+                  <ChevronRight className="h-5 w-5 ml-2 group-hover:translate-x-1 transition-transform" />
+                </Button>
+              </div>
             </CardContent>
           </Card>
         </div>
