@@ -24,6 +24,14 @@ export default function LoginForm() {
     }
   };
 
+  const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setEmail(e.target.value);
+  };
+
+  const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setPassword(e.target.value);
+  };
+
   return (
     <AuthLayout>
       <div className="cyber-card rounded-2xl p-8 w-full max-w-md mx-auto slide-in-bottom">
@@ -58,7 +66,7 @@ export default function LoginForm() {
               type="email"
               placeholder="name@example.com"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={handleEmailChange}
               required
               className="neon-input h-12 rounded-lg placeholder:text-gray-500"
               autoComplete="email"
@@ -84,7 +92,7 @@ export default function LoginForm() {
               type="password"
               placeholder="Enter your password"
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              onChange={handlePasswordChange}
               required
               className="neon-input h-12 rounded-lg placeholder:text-gray-500"
               autoComplete="current-password"

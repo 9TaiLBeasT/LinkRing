@@ -321,32 +321,54 @@ const Leaderboard = () => {
 
       if (ringsError) throw ringsError;
 
-      // Get member and link counts separately
+      // Get member and link counts separately with proper filtering
       const processedRings = [];
       if (ringsData) {
-        for (const ring of ringsData.slice(0, 8)) {
-          const { count: memberCount } = await supabase
+        // Get all member and link counts in batch for efficiency
+        const ringIds = ringsData.map((ring) => ring.id);
+
+        const [allMemberCounts, allLinkCounts] = await Promise.all([
+          supabase
             .from("ring_members")
-            .select("*", { count: "exact", head: true })
-            .eq("ring_id", ring.id);
-
-          const { count: linkCount } = await supabase
+            .select("ring_id")
+            .in("ring_id", ringIds),
+          supabase
             .from("shared_links")
-            .select("*", { count: "exact", head: true })
-            .eq("ring_id", ring.id);
+            .select("ring_id")
+            .in("ring_id", ringIds)
+            .gte("created_at", timeThreshold),
+        ]);
 
-          const activityScore = (memberCount || 0) * 10 + (linkCount || 0) * 5;
+        for (const ring of ringsData) {
+          const memberCount =
+            allMemberCounts.data?.filter((m) => m.ring_id === ring.id).length ||
+            0;
+          const linkCount =
+            allLinkCounts.data?.filter((l) => l.ring_id === ring.id).length ||
+            0;
+
+          // More sophisticated activity score calculation
+          const recentActivityMultiplier =
+            timeFilter === "today" ? 2 : timeFilter === "week" ? 1.5 : 1;
+          const activityScore = Math.floor(
+            (memberCount * 8 + linkCount * 12) * recentActivityMultiplier,
+          );
+
           processedRings.push({
             ...ring,
-            member_count: memberCount || 0,
-            link_count: linkCount || 0,
+            member_count: memberCount,
+            link_count: linkCount,
             activity_score: activityScore,
-            rank: processedRings.length + 1,
+            rank: 0, // Will be set after sorting
           });
         }
       }
 
+      // Sort by activity score and assign ranks
       processedRings.sort((a, b) => b.activity_score - a.activity_score);
+      processedRings.forEach((ring, index) => {
+        ring.rank = index + 1;
+      });
 
       setTopRings(processedRings.slice(0, 8));
 

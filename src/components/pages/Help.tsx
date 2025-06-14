@@ -261,7 +261,17 @@ const Help = () => {
       title: "Getting Started Guide",
       description: "Learn the basics of using LinkRing",
       icon: <Book className="h-6 w-6" />,
-      action: () => setSelectedCategory("getting-started"),
+      action: () => {
+        setSelectedCategory("getting-started");
+        setSearchQuery("");
+        // Scroll to FAQ section
+        setTimeout(() => {
+          const faqSection = document.querySelector('[data-section="faq"]');
+          if (faqSection) {
+            faqSection.scrollIntoView({ behavior: "smooth" });
+          }
+        }, 100);
+      },
     },
     {
       title: "Video Tutorials",
@@ -280,7 +290,15 @@ const Help = () => {
       title: "Community Forum",
       description: "Connect with other users",
       icon: <Users className="h-6 w-6" />,
-      action: () => window.open("https://community.linkring.app", "_blank"),
+      action: () => {
+        // For demo purposes, show a toast since the forum doesn't exist yet
+        toast({
+          title: "Community Forum",
+          description:
+            "Community forum coming soon! For now, you can contact support for help.",
+          className: "bg-neon-dark border-neon-green text-neon-green",
+        });
+      },
     },
   ];
 
@@ -393,7 +411,10 @@ const Help = () => {
                   </Card>
 
                   {/* FAQ Section */}
-                  <Card className="bg-neon-dark border-neon-green/30">
+                  <Card
+                    className="bg-neon-dark border-neon-green/30"
+                    data-section="faq"
+                  >
                     <CardHeader>
                       <CardTitle className="text-neon-green font-mono flex items-center gap-2">
                         <HelpCircle className="h-5 w-5" />

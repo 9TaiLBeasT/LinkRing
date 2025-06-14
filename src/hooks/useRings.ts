@@ -79,6 +79,11 @@ export function useRings() {
       // Get member counts and link counts for each ring
       const ringIds = memberRings?.map((mr) => mr.ring_id) || [];
 
+      if (ringIds.length === 0) {
+        setRings([]);
+        return;
+      }
+
       const [memberCounts, linkCounts] = await Promise.all([
         supabase.from("ring_members").select("ring_id").in("ring_id", ringIds),
         supabase.from("shared_links").select("ring_id").in("ring_id", ringIds),

@@ -31,6 +31,18 @@ export default function SignUpForm() {
     }
   };
 
+  const handleFullNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFullName(e.target.value);
+  };
+
+  const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setEmail(e.target.value);
+  };
+
+  const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setPassword(e.target.value);
+  };
+
   return (
     <AuthLayout>
       <div className="cyber-card rounded-2xl p-8 w-full max-w-md mx-auto slide-in-bottom">
@@ -65,7 +77,7 @@ export default function SignUpForm() {
               type="text"
               placeholder="John Doe"
               value={fullName}
-              onChange={(e) => setFullName(e.target.value)}
+              onChange={handleFullNameChange}
               required
               className="neon-input h-12 rounded-lg placeholder:text-gray-500"
               autoComplete="name"
@@ -83,7 +95,7 @@ export default function SignUpForm() {
               type="email"
               placeholder="name@example.com"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={handleEmailChange}
               required
               className="neon-input h-12 rounded-lg placeholder:text-gray-500"
               autoComplete="email"
@@ -101,7 +113,7 @@ export default function SignUpForm() {
               type="password"
               placeholder="Create a password"
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              onChange={handlePasswordChange}
               required
               className="neon-input h-12 rounded-lg placeholder:text-gray-500"
               autoComplete="new-password"
