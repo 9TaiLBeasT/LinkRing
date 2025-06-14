@@ -115,7 +115,7 @@ export function useRings() {
 
           return {
             ...ring,
-            is_public: ring.is_public || false,
+            is_public: ring.is_public === true,
             member_count: memberCount,
             link_count: linkCount,
             is_owner: ring.created_by === user.id,
@@ -166,6 +166,7 @@ export function useRings() {
       } while (!isUnique);
 
       // Create the ring
+      console.log("Creating ring with isPublic:", isPublic);
       const { data: ring, error: ringError } = await supabase
         .from("rings")
         .insert({
@@ -177,6 +178,8 @@ export function useRings() {
         })
         .select()
         .single();
+
+      console.log("Created ring data:", ring);
 
       if (ringError) throw ringError;
 

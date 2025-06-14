@@ -356,10 +356,11 @@ const Explore = () => {
 
   const fetchTrendingRings = async () => {
     try {
-      // Fetch top rings - all rings for now since is_public might not be properly set
+      // Fetch only public rings for trending section
       const { data: ringsData, error: ringsError } = await supabase
         .from("rings")
-        .select("id, name, description, created_by, is_public");
+        .select("id, name, description, created_by, is_public")
+        .eq("is_public", true);
 
       if (ringsError) throw ringsError;
 
@@ -957,7 +958,7 @@ const Explore = () => {
                   <div>
                     <h3 className="text-lg font-bold text-neon-green mb-4 flex items-center gap-2">
                       <Star className="h-4 w-4" />
-                      🪐 Trending Rings
+                      Trending Rings
                     </h3>
                     <div className="space-y-4">
                       {trendingRings.map((ring) => (

@@ -72,6 +72,13 @@ export function useRingData(ringId: string) {
 
       if (ringError) throw ringError;
 
+      console.log("Fetched ring data:", ringData);
+      console.log(
+        "Ring is_public value:",
+        ringData.is_public,
+        typeof ringData.is_public,
+      );
+
       // Check if user is a member or if ring is public
       const { data: memberCheck, error: memberError } = await supabase
         .from("ring_members")
@@ -100,6 +107,7 @@ export function useRingData(ringId: string) {
 
       setRing({
         ...ringData,
+        is_public: ringData.is_public === true,
         is_owner: ringData.created_by === user.id,
       });
 
@@ -117,48 +125,15 @@ export function useRingData(ringId: string) {
 
       if (membersError) throw membersError;
 
-      // Fetch user details from auth.users for each member
-      const membersWithUserData = await Promise.all(
-        (membersData || []).map(async (member) => {
-          try {
-            // Try to get user data from Supabase auth
-            const { data: userData, error } =
-              await supabase.auth.admin.getUserById(member.user_id);
-
-            if (error || !userData.user) {
-              // Fallback to basic member data
-              return {
-                ...member,
-                user_name: `Member ${member.user_id.slice(-4)}`,
-                user_email: null,
-                avatar_url: null,
-              };
-            }
-
-            return {
-              ...member,
-              user_name:
-                userData.user?.user_metadata?.full_name ||
-                userData.user?.email?.split("@")[0] ||
-                `Member ${member.user_id.slice(-4)}`,
-              user_email: userData.user?.email,
-              avatar_url: userData.user?.user_metadata?.avatar_url,
-            };
-          } catch (error) {
-            console.warn(
-              "Failed to fetch user data for member:",
-              member.user_id,
-              error,
-            );
-            return {
-              ...member,
-              user_name: `Member ${member.user_id.slice(-4)}`,
-              user_email: null,
-              avatar_url: null,
-            };
-          }
-        }),
-      );
+      // Create member data with fallback names (no admin API needed)
+      const membersWithUserData = (membersData || []).map((member) => {
+        return {
+          ...member,
+          user_name: `Member ${member.user_id.slice(-4)}`,
+          user_email: null,
+          avatar_url: null,
+        };
+      });
 
       setMembers(membersWithUserData);
 
@@ -171,48 +146,15 @@ export function useRingData(ringId: string) {
 
       if (linksError) throw linksError;
 
-      // Fetch user details for each link
-      const linksWithUserData = await Promise.all(
-        (linksData || []).map(async (link) => {
-          try {
-            // Try to get user data from Supabase auth
-            const { data: userData, error } =
-              await supabase.auth.admin.getUserById(link.user_id);
-
-            if (error || !userData.user) {
-              // Fallback to basic user data
-              return {
-                ...link,
-                user_name: `User ${link.user_id.slice(-4)}`,
-                user_email: null,
-                avatar_url: null,
-              };
-            }
-
-            return {
-              ...link,
-              user_name:
-                userData.user?.user_metadata?.full_name ||
-                userData.user?.email?.split("@")[0] ||
-                `User ${link.user_id.slice(-4)}`,
-              user_email: userData.user?.email,
-              avatar_url: userData.user?.user_metadata?.avatar_url,
-            };
-          } catch (error) {
-            console.warn(
-              "Failed to fetch user data for link:",
-              link.user_id,
-              error,
-            );
-            return {
-              ...link,
-              user_name: `User ${link.user_id.slice(-4)}`,
-              user_email: null,
-              avatar_url: null,
-            };
-          }
-        }),
-      );
+      // Create link data with fallback names (no admin API needed)
+      const linksWithUserData = (linksData || []).map((link) => {
+        return {
+          ...link,
+          user_name: `User ${link.user_id.slice(-4)}`,
+          user_email: null,
+          avatar_url: null,
+        };
+      });
 
       setLinks(linksWithUserData);
     } catch (error: any) {
