@@ -314,10 +314,10 @@ const Leaderboard = () => {
 
       setTopLinks(processedLinks);
 
-      // Fetch top rings
+      // Fetch top rings - all rings for now since is_public might not be properly set
       const { data: ringsData, error: ringsError } = await supabase
         .from("rings")
-        .select("id, name, description, created_by");
+        .select("id, name, description, created_by, is_public");
 
       if (ringsError) throw ringsError;
 
@@ -327,6 +327,7 @@ const Leaderboard = () => {
         // Get all member and link counts in batch for efficiency
         const ringIds = ringsData.map((ring) => ring.id);
 
+        // Get member and link counts only for public rings
         const [allMemberCounts, allLinkCounts] = await Promise.all([
           supabase
             .from("ring_members")

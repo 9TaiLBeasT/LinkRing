@@ -4,9 +4,13 @@ CREATE TABLE IF NOT EXISTS rings (
   description TEXT,
   invite_code VARCHAR(50) UNIQUE NOT NULL,
   created_by UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+  is_public BOOLEAN DEFAULT false,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
+
+-- Add is_public column if it doesn't exist
+ALTER TABLE rings ADD COLUMN IF NOT EXISTS is_public BOOLEAN DEFAULT false;
 
 CREATE TABLE IF NOT EXISTS ring_members (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
@@ -49,10 +53,15 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS update_rings_updated_at ON rings;
 CREATE TRIGGER update_rings_updated_at
   BEFORE UPDATE ON rings
   FOR EACH ROW
   EXECUTE FUNCTION update_updated_at_column();
+
+alter publication supabase_realtime drop table rings;
+alter publication supabase_realtime drop table ring_members;
+alter publication supabase_realtime drop table shared_links;
 
 alter publication supabase_realtime add table rings;
 alter publication supabase_realtime add table ring_members;

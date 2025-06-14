@@ -39,12 +39,15 @@ import {
   Brain,
   Globe,
   ChevronRight,
+  Lock,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useNavigate } from "react-router-dom";
 
 const WeeklyDigest = () => {
   const { user } = useAuth();
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [isMobile, setIsMobile] = useState(false);
 
@@ -142,22 +145,24 @@ const WeeklyDigest = () => {
         mostLovedLink = savedLinksData.data[0]?.shared_links;
       }
 
-      // Fetch ring activity data
+      // Fetch ring activity data - include privacy info
       let ringActivity = [];
       if (ringsData.data && ringsData.data.length > 0) {
         const ringIds = ringsData.data.map((r) => r.ring_id);
 
-        const [ringLinksData, ringMembersData] = await Promise.all([
-          supabase
-            .from("shared_links")
-            .select("ring_id, created_at")
-            .in("ring_id", ringIds)
-            .gte("created_at", weekAgo),
-          supabase
-            .from("ring_members")
-            .select("ring_id")
-            .in("ring_id", ringIds),
-        ]);
+        const [ringLinksData, ringMembersData, ringDetailsData] =
+          await Promise.all([
+            supabase
+              .from("shared_links")
+              .select("ring_id, created_at")
+              .in("ring_id", ringIds)
+              .gte("created_at", weekAgo),
+            supabase
+              .from("ring_members")
+              .select("ring_id")
+              .in("ring_id", ringIds),
+            supabase.from("rings").select("id, is_public").in("id", ringIds),
+          ]);
 
         ringActivity = ringsData.data.map((ring) => {
           const linksThisWeek =
@@ -166,11 +171,15 @@ const WeeklyDigest = () => {
           const totalMembers =
             ringMembersData.data?.filter((m) => m.ring_id === ring.ring_id)
               .length || 0;
+          const ringDetails = ringDetailsData.data?.find(
+            (r) => r.id === ring.ring_id,
+          );
 
           return {
             ...ring,
             linksThisWeek,
             totalMembers,
+            is_public: ringDetails?.is_public || false,
             activityLevel:
               linksThisWeek > 5 ? "high" : linksThisWeek > 2 ? "medium" : "low",
           };
@@ -226,35 +235,18 @@ const WeeklyDigest = () => {
             .slice(0, 5)
             .map(([userId]) => userId);
 
-          // Get user details for top friends
+          // Get user details for top friends - use fallback since admin API requires service key
           if (topUserIds.length > 0) {
             try {
-              const friendsData = await Promise.all(
-                topUserIds.map(async (userId) => {
-                  try {
-                    const { data: userData } =
-                      await supabase.auth.admin.getUserById(userId);
-                    return {
-                      id: userId,
-                      name:
-                        userData?.user?.user_metadata?.full_name ||
-                        userData?.user?.email?.split("@")[0] ||
-                        `User ${userId.slice(-4)}`,
-                      email: userData?.user?.email,
-                      linksShared: friendCounts[userId],
-                      avatar_url: userData?.user?.user_metadata?.avatar_url,
-                    };
-                  } catch {
-                    return {
-                      id: userId,
-                      name: `User ${userId.slice(-4)}`,
-                      email: null,
-                      linksShared: friendCounts[userId],
-                      avatar_url: null,
-                    };
-                  }
-                }),
-              );
+              const friendsData = topUserIds.map((userId) => {
+                return {
+                  id: userId,
+                  name: `User ${userId.slice(-4)}`,
+                  email: null,
+                  linksShared: friendCounts[userId],
+                  avatar_url: null,
+                };
+              });
               topFriends = friendsData;
             } catch (error) {
               console.warn("Failed to fetch friend details:", error);
@@ -528,7 +520,7 @@ const WeeklyDigest = () => {
                     </p>
                     <Button
                       className="neon-button mt-6"
-                      onClick={() => (window.location.href = "/dashboard")}
+                      onClick={() => navigate("/dashboard")}
                     >
                       <Link className="h-4 w-4 mr-2" />
                       Share Your First Link
@@ -636,12 +628,20 @@ const WeeklyDigest = () => {
                       >
                         <div className="flex items-center justify-between">
                           <div>
-                            <h4 className="font-semibold text-white">
-                              {ring.rings?.name || "Unknown Ring"}
-                            </h4>
+                            <div className="flex items-center gap-2 mb-1">
+                              <h4 className="font-semibold text-white">
+                                {ring.rings?.name || "Unknown Ring"}
+                              </h4>
+                              {ring.is_public ? (
+                                <Globe className="h-4 w-4 text-neon-green" />
+                              ) : (
+                                <Lock className="h-4 w-4 text-gray-400" />
+                              )}
+                            </div>
                             <p className="text-sm text-gray-400">
                               {ring.totalMembers} members • {ring.linksThisWeek}{" "}
-                              links this week
+                              links this week •{" "}
+                              {ring.is_public ? "Public" : "Private"}
                             </p>
                           </div>
                           <div className="flex items-center gap-2">
@@ -826,7 +826,7 @@ const WeeklyDigest = () => {
                         </div>
                         <Button
                           className="bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white border-0 rounded-xl px-6 py-2"
-                          onClick={() => (window.location.href = "/post-link")}
+                          onClick={() => navigate("/post")}
                         >
                           <Zap className="h-4 w-4 mr-2" />
                           Continue Streak
@@ -851,7 +851,7 @@ const WeeklyDigest = () => {
                         </div>
                         <Button
                           className="bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white border-0 rounded-xl px-6 py-2"
-                          onClick={() => (window.location.href = "/post-link")}
+                          onClick={() => navigate("/post")}
                         >
                           <Zap className="h-4 w-4 mr-2" />
                           Share First Link
@@ -988,9 +988,7 @@ const WeeklyDigest = () => {
                           </div>
                           <Button
                             className="bg-gradient-to-r from-neon-green/20 to-blue-500/20 hover:from-neon-green/30 hover:to-blue-500/30 text-neon-green border border-neon-green/30 rounded-xl"
-                            onClick={() =>
-                              (window.location.href = "/leaderboard")
-                            }
+                            onClick={() => navigate("/leaderboard")}
                           >
                             <Star className="h-4 w-4 mr-2" />
                             View Leaderboard
@@ -1011,9 +1009,7 @@ const WeeklyDigest = () => {
                           </div>
                           <Button
                             className="bg-gradient-to-r from-neon-green/20 to-blue-500/20 hover:from-neon-green/30 hover:to-blue-500/30 text-neon-green border border-neon-green/30 rounded-xl"
-                            onClick={() =>
-                              (window.location.href = "/leaderboard")
-                            }
+                            onClick={() => navigate("/leaderboard")}
                           >
                             <Star className="h-4 w-4 mr-2" />
                             View Leaderboard
@@ -1048,7 +1044,7 @@ const WeeklyDigest = () => {
                   </div>
                   <Button
                     className="bg-gradient-to-r from-neon-green/20 to-blue-500/20 hover:from-neon-green/30 hover:to-blue-500/30 text-neon-green border border-neon-green/30 rounded-xl px-6 py-3 group-hover:scale-105 transition-all"
-                    onClick={() => (window.location.href = "/saved-links")}
+                    onClick={() => navigate("/saved-links")}
                   >
                     <History className="h-5 w-5 mr-2" />
                     View All Links

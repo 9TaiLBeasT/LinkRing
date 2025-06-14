@@ -12,7 +12,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Plus, Loader2 } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
+import { Plus, Loader2, Globe, Lock } from "lucide-react";
 import { useRings } from "@/hooks/useRings";
 
 interface CreateRingDialogProps {
@@ -23,6 +24,7 @@ const CreateRingDialog = ({ children }: CreateRingDialogProps) => {
   const [open, setOpen] = useState(false);
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
+  const [isPublic, setIsPublic] = useState(false);
   const [loading, setLoading] = useState(false);
   const { createRing } = useRings();
 
@@ -34,11 +36,13 @@ const CreateRingDialog = ({ children }: CreateRingDialogProps) => {
     const result = await createRing(
       name.trim(),
       description.trim() || undefined,
+      isPublic,
     );
 
     if (result) {
       setName("");
       setDescription("");
+      setIsPublic(false);
       setOpen(false);
     }
     setLoading(false);
@@ -94,6 +98,40 @@ const CreateRingDialog = ({ children }: CreateRingDialogProps) => {
               className="neon-input min-h-[80px] resize-none"
               maxLength={500}
             />
+          </div>
+          <div className="space-y-3">
+            <Label className="text-neon-green font-medium">
+              Ring Visibility
+            </Label>
+            <div className="flex items-center justify-between p-4 bg-neon-gray/20 rounded-lg border border-neon-green/20">
+              <div className="flex items-center gap-3">
+                {isPublic ? (
+                  <Globe className="h-5 w-5 text-neon-green" />
+                ) : (
+                  <Lock className="h-5 w-5 text-gray-400" />
+                )}
+                <div>
+                  <div className="font-medium text-white">
+                    {isPublic ? "Public Ring" : "Private Ring"}
+                  </div>
+                  <div className="text-sm text-gray-400">
+                    {isPublic
+                      ? "Visible in Explore and Leaderboard"
+                      : "Invitation-only, hidden from public"}
+                  </div>
+                </div>
+              </div>
+              <Switch
+                checked={isPublic}
+                onCheckedChange={setIsPublic}
+                className="data-[state=checked]:bg-neon-green"
+              />
+            </div>
+            <p className="text-xs text-gray-500">
+              {isPublic
+                ? "⚠️ Public rings can be discovered by anyone and appear on the global leaderboard"
+                : "🔒 Private rings are only accessible to invited members"}
+            </p>
           </div>
           <DialogFooter className="gap-2">
             <Button

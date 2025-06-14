@@ -9,6 +9,7 @@ export interface Ring {
   description?: string;
   invite_code: string;
   created_by: string;
+  is_public: boolean;
   created_at: string;
   updated_at: string;
   member_count?: number;
@@ -67,6 +68,7 @@ export function useRings() {
             description,
             invite_code,
             created_by,
+            is_public,
             created_at,
             updated_at
           )
@@ -74,7 +76,10 @@ export function useRings() {
         )
         .eq("user_id", user.id);
 
-      if (memberError) throw memberError;
+      if (memberError) {
+        console.error("Member rings error:", memberError);
+        throw memberError;
+      }
 
       // Get member counts and link counts for each ring
       const ringIds = memberRings?.map((mr) => mr.ring_id) || [];
@@ -84,23 +89,33 @@ export function useRings() {
         return;
       }
 
-      const [memberCounts, linkCounts] = await Promise.all([
+      // Only fetch counts if we have ring IDs
+      const [memberCountsResult, linkCountsResult] = await Promise.all([
         supabase.from("ring_members").select("ring_id").in("ring_id", ringIds),
         supabase.from("shared_links").select("ring_id").in("ring_id", ringIds),
       ]);
+
+      if (memberCountsResult.error) {
+        console.error("Member counts error:", memberCountsResult.error);
+      }
+      if (linkCountsResult.error) {
+        console.error("Link counts error:", linkCountsResult.error);
+      }
 
       // Process the data
       const processedRings: Ring[] =
         memberRings?.map((mr) => {
           const ring = mr.rings as any;
           const memberCount =
-            memberCounts.data?.filter((mc) => mc.ring_id === ring.id).length ||
-            0;
+            memberCountsResult.data?.filter((mc) => mc.ring_id === ring.id)
+              .length || 0;
           const linkCount =
-            linkCounts.data?.filter((lc) => lc.ring_id === ring.id).length || 0;
+            linkCountsResult.data?.filter((lc) => lc.ring_id === ring.id)
+              .length || 0;
 
           return {
             ...ring,
+            is_public: ring.is_public || false,
             member_count: memberCount,
             link_count: linkCount,
             is_owner: ring.created_by === user.id,
@@ -110,9 +125,15 @@ export function useRings() {
       setRings(processedRings);
     } catch (error: any) {
       console.error("Error fetching rings:", error);
+      console.error("Error details:", {
+        message: error.message,
+        details: error.details,
+        hint: error.hint,
+        code: error.code,
+      });
       toast({
         title: "Error",
-        description: "Failed to load rings",
+        description: `Failed to load rings: ${error.message || "Unknown error"}`,
         variant: "destructive",
       });
     } finally {
@@ -120,7 +141,11 @@ export function useRings() {
     }
   };
 
-  const createRing = async (name: string, description?: string) => {
+  const createRing = async (
+    name: string,
+    description?: string,
+    isPublic: boolean = false,
+  ) => {
     if (!user) return null;
 
     try {
@@ -130,12 +155,14 @@ export function useRings() {
 
       do {
         inviteCode = Math.random().toString(36).substring(2, 10).toUpperCase();
-        const { data: existing } = await supabase
+        const { data: existing, error } = await supabase
           .from("rings")
           .select("id")
           .eq("invite_code", inviteCode)
-          .single();
-        isUnique = !existing;
+          .maybeSingle();
+
+        // If there's an error or no existing record, the code is unique
+        isUnique = error || !existing;
       } while (!isUnique);
 
       // Create the ring
@@ -146,6 +173,7 @@ export function useRings() {
           description,
           invite_code: inviteCode,
           created_by: user.id,
+          is_public: isPublic,
         })
         .select()
         .single();

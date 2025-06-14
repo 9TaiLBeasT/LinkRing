@@ -8,6 +8,8 @@ import LinkCard from "@/components/ring/LinkCard";
 import { cn } from "@/lib/utils";
 import { useAuth } from "../../../supabase/auth";
 import Sidebar, { SidebarToggle } from "@/components/dashboard/layout/Sidebar";
+import JoinRingDialog from "@/components/dashboard/JoinRingDialog";
+import { Globe, UserPlus, Copy } from "lucide-react";
 
 const RingPage = () => {
   const { id } = useParams<{ id: string }>();
@@ -48,6 +50,11 @@ const RingPage = () => {
 
   const { ring, members, links, loading, shareLink, copyInviteCode } =
     useRingData(id);
+
+  // Check if current user is a member
+  const isMember = user && members.some((member) => member.user_id === user.id);
+  const canShareLinks = isMember;
+  const canViewContent = ring && (ring.is_public || isMember);
 
   if (loading) {
     return (
@@ -124,10 +131,44 @@ const RingPage = () => {
               onCopyInvite={copyInviteCode}
             />
 
-            {/* Link Submission Form - Sticky */}
-            <div className="sticky top-0 z-20">
-              <LinkSubmissionForm onSubmit={handleShareLink} />
-            </div>
+            {/* Link Submission Form - Sticky - Only for members */}
+            {canShareLinks && (
+              <div className="sticky top-0 z-20">
+                <LinkSubmissionForm onSubmit={handleShareLink} />
+              </div>
+            )}
+
+            {/* Public Ring Notice for Non-Members */}
+            {ring && ring.is_public && !isMember && (
+              <div className="bg-neon-gray/30 border border-neon-green/30 rounded-xl p-6 mx-6 mb-6">
+                <div className="flex items-center gap-3 mb-3">
+                  <Globe className="h-6 w-6 text-neon-green" />
+                  <h3 className="text-xl font-bold text-neon-green font-mono">
+                    Public Ring - Read Only
+                  </h3>
+                </div>
+                <p className="text-gray-300 mb-4">
+                  You're viewing this public ring as a guest. Join the ring to
+                  share links and participate in discussions.
+                </p>
+                <div className="flex gap-3">
+                  <JoinRingDialog>
+                    <Button className="neon-button">
+                      <UserPlus className="h-4 w-4 mr-2" />
+                      Join Ring
+                    </Button>
+                  </JoinRingDialog>
+                  <Button
+                    variant="outline"
+                    onClick={copyInviteCode}
+                    className="border-neon-green/30 text-neon-green hover:bg-neon-green/10"
+                  >
+                    <Copy className="h-4 w-4 mr-2" />
+                    Copy Invite Code
+                  </Button>
+                </div>
+              </div>
+            )}
 
             {/* Link Feed */}
             <div

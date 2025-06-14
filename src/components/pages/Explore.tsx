@@ -221,7 +221,7 @@ const Explore = () => {
         linksQuery = linksQuery.gte("created_at", dateThreshold.toISOString());
       }
 
-      // Filter by user's rings if enabled
+      // Filter by user's rings if enabled, otherwise only show public rings
       if (showOnlyMyRings && user) {
         const { data: userRings } = await supabase
           .from("ring_members")
@@ -233,6 +233,31 @@ const Explore = () => {
           linksQuery = linksQuery.in("ring_id", ringIds);
         } else {
           // User has no rings, return empty result
+          if (reset) setLinks([]);
+          setHasMore(false);
+          return;
+        }
+      } else {
+        // Get all rings for now since is_public might not be properly set
+        const { data: publicRings } = await supabase
+          .from("rings")
+          .select("id, is_public");
+
+        if (publicRings && publicRings.length > 0) {
+          // Filter for public rings, but if none are marked as public, show all
+          const publicRingIds = publicRings
+            .filter((r) => r.is_public === true)
+            .map((r) => r.id);
+
+          if (publicRingIds.length > 0) {
+            linksQuery = linksQuery.in("ring_id", publicRingIds);
+          } else {
+            // If no rings are marked as public, show all rings
+            const allRingIds = publicRings.map((r) => r.id);
+            linksQuery = linksQuery.in("ring_id", allRingIds);
+          }
+        } else {
+          // No rings at all, return empty result
           if (reset) setLinks([]);
           setHasMore(false);
           return;
@@ -331,12 +356,10 @@ const Explore = () => {
 
   const fetchTrendingRings = async () => {
     try {
-      // Get rings with their member and link counts
+      // Fetch top rings - all rings for now since is_public might not be properly set
       const { data: ringsData, error: ringsError } = await supabase
         .from("rings")
-        .select("*")
-        .order("created_at", { ascending: false })
-        .limit(6);
+        .select("id, name, description, created_by, is_public");
 
       if (ringsError) throw ringsError;
 

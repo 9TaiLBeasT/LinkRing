@@ -9,6 +9,7 @@ export interface RingData {
   description?: string;
   invite_code: string;
   created_by: string;
+  is_public: boolean;
   created_at: string;
   updated_at: string;
   is_owner?: boolean;
@@ -71,7 +72,7 @@ export function useRingData(ringId: string) {
 
       if (ringError) throw ringError;
 
-      // Check if user is a member
+      // Check if user is a member or if ring is public
       const { data: memberCheck, error: memberError } = await supabase
         .from("ring_members")
         .select("role")
@@ -83,10 +84,15 @@ export function useRingData(ringId: string) {
         throw memberError;
       }
 
-      if (!memberCheck) {
+      // Allow access if user is a member OR if ring is public
+      const isMember = !!memberCheck;
+      const isPublicRing = ringData.is_public;
+
+      if (!isMember && !isPublicRing) {
         toast({
           title: "Access Denied",
-          description: "You are not a member of this ring",
+          description:
+            "This is a private ring. You need an invitation to access it.",
           variant: "destructive",
         });
         return;
@@ -228,6 +234,23 @@ export function useRingData(ringId: string) {
     tags?: string[],
   ) => {
     if (!user || !ringId) return null;
+
+    // Check if user is a member before allowing link sharing
+    const { data: memberCheck } = await supabase
+      .from("ring_members")
+      .select("role")
+      .eq("ring_id", ringId)
+      .eq("user_id", user.id)
+      .single();
+
+    if (!memberCheck) {
+      toast({
+        title: "Access Denied",
+        description: "Only ring members can share links",
+        variant: "destructive",
+      });
+      return null;
+    }
 
     try {
       const { data: linkData, error: linkError } = await supabase

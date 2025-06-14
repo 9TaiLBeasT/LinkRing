@@ -74,6 +74,14 @@ function AppRoutes() {
           }
         />
         <Route
+          path="/saved-links"
+          element={
+            <PrivateRoute>
+              <SavedLinks />
+            </PrivateRoute>
+          }
+        />
+        <Route
           path="/post"
           element={
             <PrivateRoute>

@@ -2,7 +2,15 @@ import React from "react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { Copy, Crown, Users, Link as LinkIcon, Zap } from "lucide-react";
+import {
+  Copy,
+  Crown,
+  Users,
+  Link as LinkIcon,
+  Zap,
+  Globe,
+  Lock,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 import { RingData, RingMember } from "@/hooks/useRingData";
 
@@ -80,6 +88,23 @@ const RingHeader = ({
               >
                 {ring.invite_code}
               </Badge>
+              <div className="flex items-center gap-2 bg-neon-gray/30 px-3 py-1 rounded-full border border-neon-green/20">
+                {ring.is_public ? (
+                  <>
+                    <Globe className="h-4 w-4 text-neon-green" />
+                    <span className="text-neon-green font-mono text-sm">
+                      Public
+                    </span>
+                  </>
+                ) : (
+                  <>
+                    <Lock className="h-4 w-4 text-gray-400" />
+                    <span className="text-gray-400 font-mono text-sm">
+                      Private
+                    </span>
+                  </>
+                )}
+              </div>
             </div>
           </div>
 
