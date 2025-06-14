@@ -81,6 +81,21 @@
 }
 
 @layer components {
+  /* Mobile-first responsive utilities */
+  .safe-area-top {
+    padding-top: env(safe-area-inset-top);
+  }
+
+  .safe-area-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  .touch-manipulation {
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* Mobile-optimized input styles */
   .neon-input {
     background: rgba(26, 26, 26, 0.8) !important;
     border: 1px solid rgba(0, 255, 157, 0.3) !important;
@@ -89,6 +104,13 @@
     -webkit-appearance: none;
     -moz-appearance: none;
     appearance: none;
+    font-size: 16px; /* Prevents zoom on iOS */
+  }
+
+  @media (max-width: 768px) {
+    .neon-input {
+      min-height: 44px; /* iOS minimum touch target */
+    }
   }
 
   .neon-input:focus {
@@ -112,6 +134,15 @@
     transition: all 0.3s ease;
     position: relative;
     overflow: hidden;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  @media (max-width: 768px) {
+    .neon-button {
+      min-height: 44px; /* iOS minimum touch target */
+      font-size: 16px; /* Prevents zoom on iOS */
+    }
   }
 
   .neon-button:hover {
@@ -145,6 +176,14 @@
     backdrop-filter: blur(10px);
     transition: all 0.3s ease;
     position: relative;
+  }
+
+  @media (max-width: 768px) {
+    .cyber-card {
+      backdrop-filter: blur(
+        5px
+      ); /* Reduce blur for better mobile performance */
+    }
   }
 
   .cyber-card:hover {
@@ -473,6 +512,67 @@
   }
   100% {
     box-shadow: 0 0 40px rgba(0, 255, 157, 0.4);
+  }
+}
+
+/* Mobile-specific responsive utilities */
+@media (max-width: 640px) {
+  .mobile-full-width {
+    width: 100% !important;
+  }
+
+  .mobile-stack {
+    flex-direction: column !important;
+  }
+
+  .mobile-center {
+    text-align: center !important;
+  }
+
+  .mobile-hidden {
+    display: none !important;
+  }
+
+  .mobile-text-sm {
+    font-size: 0.875rem !important;
+  }
+
+  .mobile-p-2 {
+    padding: 0.5rem !important;
+  }
+
+  .mobile-gap-2 {
+    gap: 0.5rem !important;
+  }
+}
+
+/* Tablet-specific utilities */
+@media (min-width: 641px) and (max-width: 1024px) {
+  .tablet-hidden {
+    display: none !important;
+  }
+}
+
+/* Improve touch targets on mobile */
+@media (max-width: 768px) {
+  button,
+  [role="button"],
+  input[type="submit"],
+  input[type="button"] {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  /* Improve form inputs on mobile */
+  input,
+  textarea,
+  select {
+    font-size: 16px; /* Prevents zoom on iOS */
+  }
+
+  /* Better scrolling on mobile */
+  .scroll-smooth {
+    -webkit-overflow-scrolling: touch;
   }
 }
 

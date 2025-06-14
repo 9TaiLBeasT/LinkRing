@@ -249,8 +249,14 @@ export function useRingData(ringId: string) {
 
           if (fallbackError) throw fallbackError;
 
-          // Add to local state
-          setLinks((prev) => [fallbackLinkData, ...prev]);
+          // Add to local state with user info
+          const fallbackLinkWithUserInfo = {
+            ...fallbackLinkData,
+            user_name: `User ${user.id.slice(-4)}`,
+            user_email: null,
+            avatar_url: null,
+          };
+          setLinks((prev) => [fallbackLinkWithUserInfo, ...prev]);
 
           toast({
             title: "Success",
@@ -263,8 +269,14 @@ export function useRingData(ringId: string) {
         throw linkError;
       }
 
-      // Add to local state
-      setLinks((prev) => [linkData, ...prev]);
+      // Add to local state with user info
+      const linkWithUserInfo = {
+        ...linkData,
+        user_name: `User ${user.id.slice(-4)}`,
+        user_email: null,
+        avatar_url: null,
+      };
+      setLinks((prev) => [linkWithUserInfo, ...prev]);
 
       toast({
         title: "Success",
@@ -302,6 +314,67 @@ export function useRingData(ringId: string) {
       });
     }
   };
+
+  // Set up real-time subscription for shared links
+  useEffect(() => {
+    if (!ringId || !user) return;
+
+    console.log(`Setting up real-time subscription for ring links: ${ringId}`);
+
+    const channel = supabase
+      .channel(`ring_links_${ringId}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "shared_links",
+          filter: `ring_id=eq.${ringId}`,
+        },
+        (payload) => {
+          console.log("Real-time link INSERT received:", payload);
+          const newLink = payload.new as any;
+          const linkWithUserInfo = {
+            ...newLink,
+            user_name: `User ${newLink.user_id.slice(-4)}`,
+            user_email: null,
+            avatar_url: null,
+          };
+
+          setLinks((prev) => {
+            // Avoid duplicates
+            const exists = prev.some((link) => link.id === newLink.id);
+            if (exists) return prev;
+            return [linkWithUserInfo, ...prev];
+          });
+        },
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "DELETE",
+          schema: "public",
+          table: "shared_links",
+          filter: `ring_id=eq.${ringId}`,
+        },
+        (payload) => {
+          console.log("Real-time link DELETE received:", payload);
+          const deletedLink = payload.old as any;
+          setLinks((prev) => prev.filter((link) => link.id !== deletedLink.id));
+        },
+      )
+      .subscribe((status, err) => {
+        console.log(`Ring links subscription status for ${ringId}:`, status);
+        if (err) {
+          console.error(`Ring links subscription error for ${ringId}:`, err);
+        }
+      });
+
+    return () => {
+      console.log(`Cleaning up ring links subscription: ${ringId}`);
+      supabase.removeChannel(channel);
+    };
+  }, [ringId, user]);
 
   useEffect(() => {
     fetchRingData();

@@ -173,23 +173,24 @@ const LinkSubmissionForm = ({
   return (
     <div
       className={cn(
-        "bg-neon-dark/98 backdrop-blur-lg border-b border-neon-green/30 p-6 shadow-neon-lg",
+        "bg-neon-dark/98 backdrop-blur-lg border-b border-neon-green/30 p-4 md:p-6 shadow-neon-lg",
         className,
       )}
     >
       <div className="max-w-4xl mx-auto">
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Header */}
-          <div className="flex items-center gap-3 mb-4">
-            <Link className="h-6 w-6 text-neon-green animate-pulse" />
-            <h2 className="text-xl font-bold text-neon-green font-mono">
-              Share Link to Ring
+          <div className="flex items-center gap-2 md:gap-3 mb-4">
+            <Link className="h-5 w-5 md:h-6 md:w-6 text-neon-green animate-pulse" />
+            <h2 className="text-lg md:text-xl font-bold text-neon-green font-mono">
+              <span className="hidden sm:inline">Share Link to Ring</span>
+              <span className="sm:hidden">Share Link</span>
             </h2>
-            <Sparkles className="h-5 w-5 text-neon-green animate-bounce" />
+            <Sparkles className="h-4 w-4 md:h-5 md:w-5 text-neon-green animate-bounce" />
           </div>
 
           {/* URL Input */}
-          <div className="flex gap-3">
+          <div className="flex flex-col sm:flex-row gap-3">
             <div className="flex-1 relative">
               <Input
                 type="url"
@@ -197,7 +198,7 @@ const LinkSubmissionForm = ({
                 onChange={handleUrlChange}
                 placeholder="🔗 Paste your URL here..."
                 className={cn(
-                  "neon-input text-lg py-3 pl-4 pr-12 transition-all duration-300",
+                  "neon-input text-base md:text-lg py-3 pl-4 pr-12 transition-all duration-300 h-12 md:h-auto touch-manipulation",
                   url && "border-neon-green/60 shadow-neon",
                   embedPreview && "border-blue-500/60 shadow-blue-500/20",
                 )}
@@ -220,7 +221,7 @@ const LinkSubmissionForm = ({
               type="submit"
               disabled={!url.trim() || !title.trim() || loading}
               className={cn(
-                "neon-button px-8 py-3 text-lg font-bold transition-all duration-300 relative overflow-hidden",
+                "neon-button px-6 md:px-8 py-3 text-base md:text-lg font-bold transition-all duration-300 relative overflow-hidden h-12 md:h-auto w-full sm:w-auto touch-manipulation",
                 loading && "animate-pulse-glow",
                 isSubmitting && "animate-bounce",
               )}
@@ -228,12 +229,16 @@ const LinkSubmissionForm = ({
               {loading ? (
                 <>
                   <Loader2 className="h-5 w-5 mr-2 animate-spin" />
-                  <span className="animate-pulse">Sharing...</span>
+                  <span className="animate-pulse">
+                    <span className="hidden sm:inline">Sharing...</span>
+                    <span className="sm:hidden">Sharing</span>
+                  </span>
                 </>
               ) : (
                 <>
                   <Send className="h-5 w-5 mr-2" />
-                  Share to Ring
+                  <span className="hidden sm:inline">Share to Ring</span>
+                  <span className="sm:hidden">Share</span>
                 </>
               )}
               {/* Sending animation overlay */}
@@ -301,7 +306,7 @@ const LinkSubmissionForm = ({
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
                   placeholder="Enter a catchy title..."
-                  className="neon-input text-lg py-3"
+                  className="neon-input text-base md:text-lg py-3 h-12 md:h-auto touch-manipulation"
                   required
                 />
               </div>
@@ -338,12 +343,12 @@ const LinkSubmissionForm = ({
                 </div>
 
                 {/* Custom Tag Input */}
-                <div className="flex gap-3">
+                <div className="flex flex-col sm:flex-row gap-3">
                   <Input
                     value={customTag}
                     onChange={(e) => setCustomTag(e.target.value)}
                     placeholder="Create custom tag..."
-                    className="neon-input flex-1"
+                    className="neon-input flex-1 h-12 md:h-auto touch-manipulation"
                     onKeyPress={(e) =>
                       e.key === "Enter" && (e.preventDefault(), addCustomTag())
                     }
@@ -352,9 +357,10 @@ const LinkSubmissionForm = ({
                     type="button"
                     onClick={addCustomTag}
                     disabled={!customTag.trim()}
-                    className="neon-button px-4"
+                    className="neon-button px-4 h-12 md:h-auto w-full sm:w-auto touch-manipulation"
                   >
                     <Plus className="h-4 w-4" />
+                    <span className="ml-2 sm:hidden">Add Tag</span>
                   </Button>
                 </div>
 
@@ -394,7 +400,7 @@ const LinkSubmissionForm = ({
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
                   placeholder="Add your thoughts about this link..."
-                  className="neon-input min-h-[80px] resize-none text-lg"
+                  className="neon-input min-h-[80px] md:min-h-[80px] resize-none text-base md:text-lg touch-manipulation"
                   maxLength={500}
                 />
                 <div className="text-xs text-gray-500 text-right font-mono">

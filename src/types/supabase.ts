@@ -9,6 +9,38 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      link_chats: {
+        Row: {
+          created_at: string | null
+          id: string
+          link_id: string
+          message: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          link_id: string
+          message: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          link_id?: string
+          message?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "link_chats_link_id_fkey"
+            columns: ["link_id"]
+            isOneToOne: false
+            referencedRelation: "shared_links"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ring_members: {
         Row: {
           id: string
@@ -191,6 +223,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      cleanup_expired_link_chats: {
+        Args: Record<PropertyKey, never>
+        Returns: number
+      }
       generate_invite_code: {
         Args: Record<PropertyKey, never>
         Returns: string

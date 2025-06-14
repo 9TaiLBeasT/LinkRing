@@ -168,20 +168,23 @@ const RingPage = () => {
 
             {/* Public Ring Notice for Non-Members */}
             {ring && ring.is_public && !isMember && (
-              <div className="bg-neon-gray/30 border border-neon-green/30 rounded-xl p-6 mx-6 mb-6">
+              <div className="bg-neon-gray/30 border border-neon-green/30 rounded-xl p-4 md:p-6 mx-4 md:mx-6 mb-6">
                 <div className="flex items-center gap-3 mb-3">
-                  <Globe className="h-6 w-6 text-neon-green" />
-                  <h3 className="text-xl font-bold text-neon-green font-mono">
-                    Public Ring - Read Only
+                  <Globe className="h-5 w-5 md:h-6 md:w-6 text-neon-green" />
+                  <h3 className="text-lg md:text-xl font-bold text-neon-green font-mono">
+                    <span className="hidden sm:inline">
+                      Public Ring - Read Only
+                    </span>
+                    <span className="sm:hidden">Read Only</span>
                   </h3>
                 </div>
-                <p className="text-gray-300 mb-4">
+                <p className="text-gray-300 mb-4 text-sm md:text-base">
                   You're viewing this public ring as a guest. Join the ring to
                   share links and participate in discussions.
                 </p>
-                <div className="flex gap-3">
+                <div className="flex flex-col sm:flex-row gap-3">
                   <JoinRingDialog>
-                    <Button className="neon-button">
+                    <Button className="neon-button w-full sm:w-auto touch-manipulation">
                       <UserPlus className="h-4 w-4 mr-2" />
                       Join Ring
                     </Button>
@@ -189,10 +192,11 @@ const RingPage = () => {
                   <Button
                     variant="outline"
                     onClick={copyInviteCode}
-                    className="border-neon-green/30 text-neon-green hover:bg-neon-green/10"
+                    className="border-neon-green/30 text-neon-green hover:bg-neon-green/10 w-full sm:w-auto touch-manipulation"
                   >
                     <Copy className="h-4 w-4 mr-2" />
-                    Copy Invite Code
+                    <span className="hidden sm:inline">Copy Invite Code</span>
+                    <span className="sm:hidden">Copy Code</span>
                   </Button>
                 </div>
               </div>
@@ -207,22 +211,24 @@ const RingPage = () => {
             >
               <div className="space-y-6">
                 {links.length === 0 ? (
-                  <div className="text-center py-16">
-                    <div className="space-y-6 animate-flicker-in">
-                      <div className="w-20 h-20 mx-auto rounded-full border-2 border-neon-green/30 flex items-center justify-center hover:border-neon-green hover:shadow-neon transition-all duration-300">
-                        <span className="text-3xl animate-pulse">🔗</span>
+                  <div className="text-center py-12 md:py-16">
+                    <div className="space-y-4 md:space-y-6 animate-flicker-in">
+                      <div className="w-16 h-16 md:w-20 md:h-20 mx-auto rounded-full border-2 border-neon-green/30 flex items-center justify-center hover:border-neon-green hover:shadow-neon transition-all duration-300">
+                        <span className="text-2xl md:text-3xl animate-pulse">
+                          🔗
+                        </span>
                       </div>
                       <h3
-                        className="text-2xl font-semibold text-white font-mono glitch-text"
+                        className="text-xl md:text-2xl font-semibold text-white font-mono glitch-text"
                         data-text="No links shared yet"
                       >
                         No links shared yet
                       </h3>
-                      <p className="text-gray-400 max-w-md mx-auto text-lg">
+                      <p className="text-gray-400 max-w-md mx-auto text-base md:text-lg px-4">
                         Be the first to share a link with your ring! Paste a URL
                         above to get started.
                       </p>
-                      <div className="flex justify-center space-x-2 mt-8">
+                      <div className="flex justify-center space-x-2 mt-6 md:mt-8">
                         <div className="w-2 h-2 bg-neon-green rounded-full animate-bounce [animation-delay:-0.3s]" />
                         <div className="w-2 h-2 bg-neon-green rounded-full animate-bounce [animation-delay:-0.15s]" />
                         <div className="w-2 h-2 bg-neon-green rounded-full animate-bounce" />
@@ -231,9 +237,9 @@ const RingPage = () => {
                   </div>
                 ) : (
                   <>
-                    <div className="flex items-center justify-between mb-8 animate-slide-in-left">
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 md:mb-8 animate-slide-in-left gap-3">
                       <h2
-                        className="text-2xl font-bold text-neon-green font-mono glitch-text"
+                        className="text-xl md:text-2xl font-bold text-neon-green font-mono glitch-text"
                         data-text="Link Feed"
                       >
                         Link Feed

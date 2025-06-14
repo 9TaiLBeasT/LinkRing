@@ -36,39 +36,39 @@ const RingHeader = ({
   return (
     <div
       className={cn(
-        "bg-neon-dark/95 backdrop-blur-md border-b border-neon-green/20 p-6 animate-slide-in-left",
+        "bg-neon-dark/95 backdrop-blur-md border-b border-neon-green/20 p-4 md:p-6 animate-slide-in-left",
         className,
       )}
     >
       <div className="max-w-6xl mx-auto">
         {/* Ring Title and Stats */}
-        <div className="flex items-start justify-between mb-8">
-          <div className="space-y-3">
-            <div className="flex items-center gap-4">
+        <div className="flex flex-col lg:flex-row items-start justify-between mb-6 md:mb-8 gap-4">
+          <div className="space-y-3 flex-1">
+            <div className="flex items-center gap-2 md:gap-4 flex-wrap">
               <h1
-                className="text-4xl font-bold text-white font-mono glitch-text hover:animate-pulse transition-all duration-300"
+                className="text-2xl md:text-4xl font-bold text-white font-mono glitch-text hover:animate-pulse transition-all duration-300"
                 data-text={ring.name}
               >
                 {ring.name}
               </h1>
               {ring.is_owner && (
                 <div className="relative">
-                  <Crown className="h-7 w-7 text-neon-green animate-pulse" />
+                  <Crown className="h-5 w-5 md:h-7 md:w-7 text-neon-green animate-pulse" />
                   <div className="absolute inset-0 animate-ping">
-                    <Crown className="h-7 w-7 text-neon-green opacity-30" />
+                    <Crown className="h-5 w-5 md:h-7 md:w-7 text-neon-green opacity-30" />
                   </div>
                 </div>
               )}
-              <Zap className="h-6 w-6 text-neon-green animate-bounce" />
+              <Zap className="h-5 w-5 md:h-6 md:w-6 text-neon-green animate-bounce" />
             </div>
 
             {ring.description && (
-              <p className="text-gray-300 max-w-2xl text-lg leading-relaxed">
+              <p className="text-gray-300 max-w-2xl text-base md:text-lg leading-relaxed">
                 {ring.description}
               </p>
             )}
 
-            <div className="flex items-center gap-6 text-sm">
+            <div className="flex flex-wrap items-center gap-3 md:gap-6 text-sm">
               <div className="flex items-center gap-2 bg-neon-gray/30 px-3 py-1 rounded-full border border-neon-green/20">
                 <Users className="h-4 w-4 text-neon-green" />
                 <span className="text-white font-mono">
@@ -83,7 +83,7 @@ const RingHeader = ({
               </div>
               <Badge
                 variant="outline"
-                className="border-neon-green/50 text-neon-green font-mono bg-neon-green/10 hover:bg-neon-green/20 hover:shadow-neon transition-all duration-300 cursor-pointer"
+                className="border-neon-green/50 text-neon-green font-mono bg-neon-green/10 hover:bg-neon-green/20 hover:shadow-neon transition-all duration-300 cursor-pointer touch-manipulation"
                 onClick={onCopyInvite}
               >
                 {ring.invite_code}
@@ -110,10 +110,11 @@ const RingHeader = ({
 
           <Button
             onClick={onCopyInvite}
-            className="neon-button font-bold text-lg px-8 py-3 hover:scale-105 transition-transform duration-200"
+            className="neon-button font-bold text-base md:text-lg px-6 md:px-8 py-3 hover:scale-105 transition-transform duration-200 w-full lg:w-auto touch-manipulation"
           >
-            <Copy className="h-5 w-5 mr-2" />
-            Copy Invite
+            <Copy className="h-4 w-4 md:h-5 md:w-5 mr-2" />
+            <span className="hidden sm:inline">Copy Invite</span>
+            <span className="sm:hidden">Copy</span>
           </Button>
         </div>
 
@@ -123,7 +124,7 @@ const RingHeader = ({
             Ring Members
           </h3>
 
-          <div className="flex items-center gap-4 flex-wrap">
+          <div className="flex items-center gap-3 md:gap-4 flex-wrap">
             {displayMembers.map((member, index) => {
               const userName = member.user_name || "Anonymous";
               const userInitials =
@@ -146,7 +147,7 @@ const RingHeader = ({
                 >
                   <Avatar
                     className={cn(
-                      "h-12 w-12 border-2 transition-all duration-300 hover:scale-125 cursor-pointer",
+                      "h-10 w-10 md:h-12 md:w-12 border-2 transition-all duration-300 hover:scale-125 cursor-pointer touch-manipulation",
                       isOwner
                         ? "border-neon-green shadow-neon-lg animate-pulse-glow"
                         : "border-neon-green/40 hover:border-neon-green hover:shadow-neon",
@@ -169,9 +170,9 @@ const RingHeader = ({
 
                   {isOwner && (
                     <div className="absolute -top-1 -right-1">
-                      <Crown className="h-5 w-5 text-neon-green animate-bounce" />
+                      <Crown className="h-4 w-4 md:h-5 md:w-5 text-neon-green animate-bounce" />
                       <div className="absolute inset-0 animate-ping">
-                        <Crown className="h-5 w-5 text-neon-green opacity-30" />
+                        <Crown className="h-4 w-4 md:h-5 md:w-5 text-neon-green opacity-30" />
                       </div>
                     </div>
                   )}
@@ -197,8 +198,8 @@ const RingHeader = ({
             })}
 
             {remainingCount > 0 && (
-              <div className="h-12 w-12 rounded-full border-2 border-neon-green/30 bg-neon-gray/50 flex items-center justify-center hover:border-neon-green hover:shadow-neon transition-all duration-300 cursor-pointer">
-                <span className="text-sm text-neon-green font-bold font-mono">
+              <div className="h-10 w-10 md:h-12 md:w-12 rounded-full border-2 border-neon-green/30 bg-neon-gray/50 flex items-center justify-center hover:border-neon-green hover:shadow-neon transition-all duration-300 cursor-pointer touch-manipulation">
+                <span className="text-xs md:text-sm text-neon-green font-bold font-mono">
                   +{remainingCount}
                 </span>
               </div>

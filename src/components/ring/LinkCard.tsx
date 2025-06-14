@@ -15,6 +15,9 @@ import { SharedLink } from "@/hooks/useRingData";
 import { formatDistanceToNow } from "date-fns";
 import EmbedPlayer from "@/components/ui/embed-player";
 import { getPlatformDisplayName, getPlatformIcon } from "@/lib/embedUtils";
+import ChatIcon from "@/components/chat/ChatIcon";
+import ChatPanel from "@/components/chat/ChatPanel";
+import { useLinkChat } from "@/hooks/useLinkChat";
 
 interface LinkCardProps {
   link: SharedLink;
@@ -59,6 +62,17 @@ const LinkCard = ({ link, className }: LinkCardProps) => {
   const [userReactions, setUserReactions] = useState<Set<string>>(new Set());
   const [isAnimating, setIsAnimating] = useState(false);
   const [justAdded, setJustAdded] = useState(false);
+  const [isChatOpen, setIsChatOpen] = useState(false);
+
+  // Chat functionality
+  const {
+    messages,
+    isExpired: isChatExpired,
+    timeRemainingFormatted,
+  } = useLinkChat({
+    linkId: link.id,
+    linkCreatedAt: link.created_at,
+  });
 
   // Drop animation effect for new cards
   useEffect(() => {
@@ -131,7 +145,7 @@ const LinkCard = ({ link, className }: LinkCardProps) => {
       <div className="absolute inset-0 bg-gradient-to-r from-transparent via-neon-green/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
       <div className="absolute inset-0 bg-gradient-to-br from-neon-green/5 via-transparent to-blue-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
 
-      <CardContent className="p-6 space-y-4 relative z-10">
+      <CardContent className="p-4 md:p-6 space-y-4 relative z-10">
         {/* Embedded Content */}
         {link.embed_type && link.embed_data && (
           <div className="mb-6">
@@ -162,7 +176,7 @@ const LinkCard = ({ link, className }: LinkCardProps) => {
         )}
 
         {/* Enhanced Link Preview */}
-        <div className="flex items-start gap-4">
+        <div className="flex items-start gap-3 md:gap-4">
           <div className="shrink-0 relative">
             {getFaviconUrl(link.url) ? (
               <div className="relative group/favicon">
@@ -170,7 +184,7 @@ const LinkCard = ({ link, className }: LinkCardProps) => {
                 <img
                   src={getFaviconUrl(link.url)!}
                   alt="Favicon"
-                  className="relative w-12 h-12 rounded-xl border-2 border-neon-green/40 group-hover:border-neon-green transition-all duration-300 group-hover:scale-110 shadow-lg"
+                  className="relative w-10 h-10 md:w-12 md:h-12 rounded-xl border-2 border-neon-green/40 group-hover:border-neon-green transition-all duration-300 group-hover:scale-110 shadow-lg"
                   onError={(e) => {
                     e.currentTarget.style.display = "none";
                   }}
@@ -180,15 +194,15 @@ const LinkCard = ({ link, className }: LinkCardProps) => {
             ) : (
               <div className="relative group/favicon">
                 <div className="absolute inset-0 rounded-xl bg-gradient-to-br from-neon-green/30 to-blue-500/30 blur-sm opacity-0 group-hover:opacity-100 transition-all duration-500" />
-                <div className="relative w-12 h-12 rounded-xl border-2 border-neon-green/40 bg-gradient-to-br from-neon-gray/80 to-neon-dark/80 flex items-center justify-center group-hover:border-neon-green group-hover:shadow-neon transition-all duration-300 group-hover:scale-110">
-                  <ExternalLink className="h-6 w-6 text-neon-green group-hover:animate-pulse" />
+                <div className="relative w-10 h-10 md:w-12 md:h-12 rounded-xl border-2 border-neon-green/40 bg-gradient-to-br from-neon-gray/80 to-neon-dark/80 flex items-center justify-center group-hover:border-neon-green group-hover:shadow-neon transition-all duration-300 group-hover:scale-110">
+                  <ExternalLink className="h-5 w-5 md:h-6 md:w-6 text-neon-green group-hover:animate-pulse" />
                 </div>
               </div>
             )}
           </div>
 
           <div className="flex-1 min-w-0 space-y-2">
-            <h3 className="font-bold text-white text-xl truncate group-hover:text-neon-green transition-colors duration-300 font-mono leading-tight">
+            <h3 className="font-bold text-white text-lg md:text-xl truncate group-hover:text-neon-green transition-colors duration-300 font-mono leading-tight">
               {link.title}
             </h3>
             <div className="flex items-center gap-2">
@@ -207,10 +221,10 @@ const LinkCard = ({ link, className }: LinkCardProps) => {
           <Button
             variant="ghost"
             size="sm"
-            className="shrink-0 text-gray-400 hover:text-neon-green hover:bg-neon-green/20 transition-all duration-300 hover:scale-110 border border-transparent hover:border-neon-green/50 rounded-xl"
+            className="shrink-0 text-gray-400 hover:text-neon-green hover:bg-neon-green/20 transition-all duration-300 hover:scale-110 border border-transparent hover:border-neon-green/50 rounded-xl h-10 w-10 md:h-8 md:w-8 p-0 touch-manipulation"
             onClick={() => window.open(link.url, "_blank")}
           >
-            <ExternalLink className="h-5 w-5" />
+            <ExternalLink className="h-5 w-5 md:h-5 md:w-5" />
           </Button>
         </div>
 
@@ -233,9 +247,9 @@ const LinkCard = ({ link, className }: LinkCardProps) => {
         )}
 
         {/* Enhanced Reactions and User Info */}
-        <div className="flex items-center justify-between pt-4 border-t border-gradient-to-r from-neon-green/20 via-neon-green/10 to-transparent">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between pt-4 border-t border-gradient-to-r from-neon-green/20 via-neon-green/10 to-transparent gap-3 sm:gap-0">
           {/* Glowing Reaction Buttons */}
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-1 flex-wrap">
             {REACTIONS.map((reaction, index) => {
               const count = reactionCounts[reaction.name];
               const isActive = userReactions.has(reaction.name);
@@ -248,7 +262,7 @@ const LinkCard = ({ link, className }: LinkCardProps) => {
                         variant="ghost"
                         size="sm"
                         className={cn(
-                          "h-11 px-4 transition-all duration-300 hover:scale-125 relative group/reaction border-2 border-transparent rounded-xl backdrop-blur-sm",
+                          "h-10 md:h-11 px-3 md:px-4 transition-all duration-300 hover:scale-125 relative group/reaction border-2 border-transparent rounded-xl backdrop-blur-sm touch-manipulation",
                           isActive
                             ? "bg-gradient-to-r from-neon-green/30 to-neon-green/20 border-neon-green/80 shadow-neon-lg animate-pulse-glow"
                             : "hover:bg-gradient-to-r hover:from-neon-green/20 hover:to-neon-green/10 hover:border-neon-green/50 hover:shadow-neon",
@@ -257,7 +271,7 @@ const LinkCard = ({ link, className }: LinkCardProps) => {
                         )}
                         onClick={() => handleReaction(reaction.name)}
                       >
-                        <span className="text-lg mr-1 group-hover/reaction:animate-bounce">
+                        <span className="text-base md:text-lg mr-1 group-hover/reaction:animate-bounce">
                           {reaction.emoji}
                         </span>
                         {count > 0 && (
@@ -288,7 +302,16 @@ const LinkCard = ({ link, className }: LinkCardProps) => {
             })}
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 md:gap-3 w-full sm:w-auto justify-between sm:justify-end">
+            {/* Chat Icon */}
+            <ChatIcon
+              messageCount={messages.length}
+              timeRemaining={timeRemainingFormatted}
+              isExpired={isChatExpired}
+              isActive={isChatOpen}
+              onClick={() => setIsChatOpen(true)}
+            />
+
             {/* Comment/Description Button */}
             {link.description && (
               <TooltipProvider>
@@ -297,12 +320,12 @@ const LinkCard = ({ link, className }: LinkCardProps) => {
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="h-8 w-8 p-0 text-gray-400 hover:text-neon-green hover:bg-neon-green/10 transition-all duration-300 hover:scale-110"
+                      className="h-10 w-10 md:h-8 md:w-8 p-0 text-gray-400 hover:text-neon-green hover:bg-neon-green/10 transition-all duration-300 hover:scale-110 touch-manipulation"
                       onClick={() => {
                         alert(`Description: ${link.description}`);
                       }}
                     >
-                      <MessageCircle className="h-4 w-4" />
+                      <MessageCircle className="h-5 w-5 md:h-4 md:w-4" />
                     </Button>
                   </TooltipTrigger>
                   <TooltipContent
@@ -320,8 +343,8 @@ const LinkCard = ({ link, className }: LinkCardProps) => {
             )}
 
             {/* User Info */}
-            <div className="flex items-center gap-3">
-              <Avatar className="h-8 w-8 border-2 border-neon-green/40 hover:border-neon-green hover:shadow-neon transition-all duration-300">
+            <div className="flex items-center gap-2 md:gap-3">
+              <Avatar className="h-8 w-8 md:h-8 md:w-8 border-2 border-neon-green/40 hover:border-neon-green hover:shadow-neon transition-all duration-300">
                 {link.avatar_url ? (
                   <AvatarImage src={link.avatar_url} alt={userName} />
                 ) : null}
@@ -329,7 +352,7 @@ const LinkCard = ({ link, className }: LinkCardProps) => {
                   {userInitials}
                 </AvatarFallback>
               </Avatar>
-              <div className="text-right space-y-1">
+              <div className="text-right space-y-1 hidden sm:block">
                 <p className="text-sm text-neon-green font-bold font-mono hover:animate-pulse cursor-default">
                   {userName}
                 </p>
@@ -346,6 +369,15 @@ const LinkCard = ({ link, className }: LinkCardProps) => {
           </div>
         </div>
       </CardContent>
+
+      {/* Chat Panel */}
+      <ChatPanel
+        linkId={link.id}
+        linkTitle={link.title}
+        linkCreatedAt={link.created_at}
+        isOpen={isChatOpen}
+        onClose={() => setIsChatOpen(false)}
+      />
     </Card>
   );
 };
