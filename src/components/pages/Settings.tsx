@@ -81,10 +81,12 @@ const Settings = () => {
     security: false,
     rings: false,
     appearance: false,
+    account: false,
     danger: false,
   });
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [showPasswordDialog, setShowPasswordDialog] = useState(false);
+  const [showLogoutDialog, setShowLogoutDialog] = useState(false);
   const [deleteConfirmText, setDeleteConfirmText] = useState("");
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [isMobile, setIsMobile] = useState(false);
@@ -376,6 +378,30 @@ const Settings = () => {
       });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleLogout = async () => {
+    setLoading(true);
+    try {
+      await signOut();
+      toast({
+        title: "Logged Out Successfully",
+        description: "You have been safely logged out of your account.",
+        className: "bg-neon-dark border-neon-green text-neon-green",
+      });
+      // Navigate to home page after logout
+      window.location.href = "/";
+    } catch (error) {
+      console.error("Error logging out:", error);
+      toast({
+        title: "Logout Error",
+        description: "Failed to log out. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+      setShowLogoutDialog(false);
     }
   };
 
@@ -786,10 +812,39 @@ const Settings = () => {
                   }
                 />
                 <SettingsSection
+                  id="account"
+                  title="Account"
+                  description="Manage your account and session."
+                  icon={<LogOut />}
+                  children={
+                    <div className="flex flex-col gap-4">
+                      <div className="bg-neon-gray/20 p-4 rounded-lg border border-neon-green/20">
+                        <h4 className="text-neon-green font-semibold mb-2 flex items-center gap-2">
+                          <LogOut className="h-4 w-4" />
+                          Sign Out
+                        </h4>
+                        <p className="text-gray-400 text-sm mb-4">
+                          Safely log out of your account and end your current
+                          session.
+                        </p>
+                        <Button
+                          className="neon-button"
+                          onClick={() => setShowLogoutDialog(true)}
+                          disabled={loading}
+                        >
+                          <LogOut className="h-4 w-4 mr-2" />
+                          {loading ? "Signing Out..." : "Sign Out"}
+                        </Button>
+                      </div>
+                    </div>
+                  }
+                />
+                <SettingsSection
                   id="danger"
-                  title="Danger"
-                  description="Manage your danger settings."
+                  title="Danger Zone"
+                  description="Irreversible and destructive actions."
                   icon={<Trash2 />}
+                  danger={true}
                   children={
                     <div className="flex flex-col gap-4">
                       <div className="bg-red-900/20 p-4 rounded-lg border border-red-500/30">
@@ -935,6 +990,46 @@ const Settings = () => {
               }}
             >
               Send Reset Email
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Logout Confirmation Dialog */}
+      <Dialog open={showLogoutDialog} onOpenChange={setShowLogoutDialog}>
+        <DialogContent className="bg-neon-dark border-neon-green/30 max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-neon-green flex items-center gap-2">
+              <LogOut className="h-5 w-5" />
+              Sign Out
+            </DialogTitle>
+            <DialogDescription className="text-gray-400">
+              Are you sure you want to sign out of your account?
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="bg-neon-gray/20 p-4 rounded-lg border border-neon-green/20">
+              <p className="text-gray-300 text-sm">
+                You will be safely logged out and redirected to the home page.
+                Your data will remain secure.
+              </p>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setShowLogoutDialog(false)}
+              disabled={loading}
+            >
+              Cancel
+            </Button>
+            <Button
+              className="neon-button"
+              onClick={handleLogout}
+              disabled={loading}
+            >
+              <LogOut className="h-4 w-4 mr-2" />
+              {loading ? "Signing Out..." : "Sign Out"}
             </Button>
           </DialogFooter>
         </DialogContent>

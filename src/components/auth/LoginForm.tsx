@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useAuth } from "../../../supabase/auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,26 +10,43 @@ export default function LoginForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
   const { signIn } = useAuth();
   const navigate = useNavigate();
+  const emailRef = useRef<HTMLInputElement>(null);
+  const passwordRef = useRef<HTMLInputElement>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+    setIsLoading(true);
+
     try {
       await signIn(email, password);
       navigate("/dashboard");
     } catch (error) {
       setError("Invalid email or password");
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setEmail(e.target.value);
+    setError(""); // Clear error when user starts typing
   };
 
   const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setPassword(e.target.value);
+    setError(""); // Clear error when user starts typing
+  };
+
+  const handleEmailClick = () => {
+    emailRef.current?.focus();
+  };
+
+  const handlePasswordClick = () => {
+    passwordRef.current?.focus();
   };
 
   return (
@@ -57,64 +74,81 @@ export default function LoginForm() {
           <div className="space-y-2">
             <Label
               htmlFor="email"
-              className="text-sm font-medium text-neon-green/80"
+              className="text-sm font-medium text-neon-green/80 cursor-pointer"
+              onClick={handleEmailClick}
             >
               Email
             </Label>
-            <Input
-              id="email"
-              type="email"
-              placeholder="name@example.com"
-              value={email}
-              onChange={handleEmailChange}
-              required
-              className="neon-input h-12 rounded-lg placeholder:text-gray-500"
-              autoComplete="email"
-            />
+            <div className="relative" onClick={handleEmailClick}>
+              <Input
+                ref={emailRef}
+                id="email"
+                type="email"
+                placeholder="name@example.com"
+                value={email}
+                onChange={handleEmailChange}
+                required
+                disabled={isLoading}
+                className="neon-input h-12 rounded-lg placeholder:text-gray-500 cursor-text focus:cursor-text"
+                autoComplete="email"
+                style={{ pointerEvents: "auto" }}
+              />
+            </div>
           </div>
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <Label
                 htmlFor="password"
-                className="text-sm font-medium text-neon-green/80"
+                className="text-sm font-medium text-neon-green/80 cursor-pointer"
+                onClick={handlePasswordClick}
               >
                 Password
               </Label>
               <Link
                 to="/forgot-password"
-                className="text-sm font-medium text-neon-green hover:text-neon-green/80 transition-colors"
+                className="text-sm font-medium text-neon-green hover:text-neon-green/80 transition-colors z-10 relative"
               >
                 Forgot password?
               </Link>
             </div>
-            <Input
-              id="password"
-              type="password"
-              placeholder="Enter your password"
-              value={password}
-              onChange={handlePasswordChange}
-              required
-              className="neon-input h-12 rounded-lg placeholder:text-gray-500"
-              autoComplete="current-password"
-            />
+            <div className="relative" onClick={handlePasswordClick}>
+              <Input
+                ref={passwordRef}
+                id="password"
+                type="password"
+                placeholder="Enter your password"
+                value={password}
+                onChange={handlePasswordChange}
+                required
+                disabled={isLoading}
+                className="neon-input h-12 rounded-lg placeholder:text-gray-500 cursor-text focus:cursor-text"
+                autoComplete="current-password"
+                style={{ pointerEvents: "auto" }}
+              />
+            </div>
           </div>
           {error && (
-            <p className="text-sm text-red-400 bg-red-500/10 p-3 rounded-lg border border-red-500/20">
+            <div className="text-sm text-red-400 bg-red-500/10 p-3 rounded-lg border border-red-500/20 animate-slide-in-bottom">
               {error}
-            </p>
+            </div>
           )}
           <Button
             type="submit"
-            className="neon-button ripple-effect w-full h-12 rounded-full font-bold text-sm"
+            disabled={isLoading || !email.trim() || !password.trim()}
+            className="neon-button ripple-effect w-full h-12 rounded-full font-bold text-sm disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Sign in
+            {isLoading ? "Signing in..." : "Sign in"}
           </Button>
 
           <div className="text-sm text-center text-gray-400 mt-6">
             Don't have an account?{" "}
             <Link
               to="/signup"
-              className="text-neon-green hover:text-neon-green/80 font-medium transition-colors"
+              className="text-neon-green hover:text-neon-green/80 font-medium transition-colors underline hover:no-underline z-10 relative"
+              onClick={(e) => {
+                e.preventDefault();
+                navigate("/signup");
+              }}
             >
               Sign up
             </Link>

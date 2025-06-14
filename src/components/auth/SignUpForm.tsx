@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useAuth } from "../../../supabase/auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,12 +12,19 @@ export default function SignUpForm() {
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
   const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
   const { signUp } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const fullNameRef = useRef<HTMLInputElement>(null);
+  const emailRef = useRef<HTMLInputElement>(null);
+  const passwordRef = useRef<HTMLInputElement>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError("");
+    setIsLoading(true);
+
     try {
       await signUp(email, password, fullName);
       toast({
@@ -28,19 +35,36 @@ export default function SignUpForm() {
       navigate("/login");
     } catch (error) {
       setError("Error creating account");
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const handleFullNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFullName(e.target.value);
+    setError(""); // Clear error when user starts typing
   };
 
   const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setEmail(e.target.value);
+    setError(""); // Clear error when user starts typing
   };
 
   const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setPassword(e.target.value);
+    setError(""); // Clear error when user starts typing
+  };
+
+  const handleFullNameClick = () => {
+    fullNameRef.current?.focus();
+  };
+
+  const handleEmailClick = () => {
+    emailRef.current?.focus();
+  };
+
+  const handlePasswordClick = () => {
+    passwordRef.current?.focus();
   };
 
   return (
@@ -68,72 +92,97 @@ export default function SignUpForm() {
           <div className="space-y-2">
             <Label
               htmlFor="fullName"
-              className="text-sm font-medium text-neon-green/80"
+              className="text-sm font-medium text-neon-green/80 cursor-pointer"
+              onClick={handleFullNameClick}
             >
               Full Name
             </Label>
-            <Input
-              id="fullName"
-              type="text"
-              placeholder="John Doe"
-              value={fullName}
-              onChange={handleFullNameChange}
-              required
-              className="neon-input h-12 rounded-lg placeholder:text-gray-500"
-              autoComplete="name"
-            />
+            <div className="relative" onClick={handleFullNameClick}>
+              <Input
+                ref={fullNameRef}
+                id="fullName"
+                type="text"
+                placeholder="John Doe"
+                value={fullName}
+                onChange={handleFullNameChange}
+                required
+                disabled={isLoading}
+                className="neon-input h-12 rounded-lg placeholder:text-gray-500 cursor-text focus:cursor-text"
+                autoComplete="name"
+                style={{ pointerEvents: "auto" }}
+              />
+            </div>
           </div>
           <div className="space-y-2">
             <Label
               htmlFor="email"
-              className="text-sm font-medium text-neon-green/80"
+              className="text-sm font-medium text-neon-green/80 cursor-pointer"
+              onClick={handleEmailClick}
             >
               Email
             </Label>
-            <Input
-              id="email"
-              type="email"
-              placeholder="name@example.com"
-              value={email}
-              onChange={handleEmailChange}
-              required
-              className="neon-input h-12 rounded-lg placeholder:text-gray-500"
-              autoComplete="email"
-            />
+            <div className="relative" onClick={handleEmailClick}>
+              <Input
+                ref={emailRef}
+                id="email"
+                type="email"
+                placeholder="name@example.com"
+                value={email}
+                onChange={handleEmailChange}
+                required
+                disabled={isLoading}
+                className="neon-input h-12 rounded-lg placeholder:text-gray-500 cursor-text focus:cursor-text"
+                autoComplete="email"
+                style={{ pointerEvents: "auto" }}
+              />
+            </div>
           </div>
           <div className="space-y-2">
             <Label
               htmlFor="password"
-              className="text-sm font-medium text-neon-green/80"
+              className="text-sm font-medium text-neon-green/80 cursor-pointer"
+              onClick={handlePasswordClick}
             >
               Password
             </Label>
-            <Input
-              id="password"
-              type="password"
-              placeholder="Create a password"
-              value={password}
-              onChange={handlePasswordChange}
-              required
-              className="neon-input h-12 rounded-lg placeholder:text-gray-500"
-              autoComplete="new-password"
-              minLength={8}
-            />
+            <div className="relative" onClick={handlePasswordClick}>
+              <Input
+                ref={passwordRef}
+                id="password"
+                type="password"
+                placeholder="Create a password"
+                value={password}
+                onChange={handlePasswordChange}
+                required
+                disabled={isLoading}
+                minLength={8}
+                className="neon-input h-12 rounded-lg placeholder:text-gray-500 cursor-text focus:cursor-text"
+                autoComplete="new-password"
+                style={{ pointerEvents: "auto" }}
+              />
+            </div>
             <p className="text-xs text-neon-green/60 mt-1">
               Password must be at least 8 characters
             </p>
           </div>
           {error && (
-            <p className="text-sm text-red-400 bg-red-500/10 p-3 rounded-lg border border-red-500/20">
+            <div className="text-sm text-red-400 bg-red-500/10 p-3 rounded-lg border border-red-500/20 animate-slide-in-bottom">
               {error}
-            </p>
+            </div>
           )}
 
           <Button
             type="submit"
-            className="neon-button ripple-effect w-full h-12 rounded-full font-bold text-sm"
+            disabled={
+              isLoading ||
+              !email.trim() ||
+              !password.trim() ||
+              !fullName.trim() ||
+              password.length < 8
+            }
+            className="neon-button ripple-effect w-full h-12 rounded-full font-bold text-sm disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Create account
+            {isLoading ? "Creating account..." : "Create account"}
           </Button>
 
           <div className="text-xs text-center text-gray-500 mt-6">
@@ -157,7 +206,11 @@ export default function SignUpForm() {
             Already have an account?{" "}
             <Link
               to="/login"
-              className="text-neon-green hover:text-neon-green/80 font-medium transition-colors"
+              className="text-neon-green hover:text-neon-green/80 font-medium transition-colors underline hover:no-underline z-10 relative"
+              onClick={(e) => {
+                e.preventDefault();
+                navigate("/login");
+              }}
             >
               Sign in
             </Link>
