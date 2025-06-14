@@ -34,6 +34,8 @@ export interface SharedLink {
   url: string;
   description?: string;
   tags?: string[];
+  embed_type?: string;
+  embed_data?: any;
   created_at: string;
   reactions?: LinkReaction[];
   user_name?: string;
@@ -174,6 +176,8 @@ export function useRingData(ringId: string) {
     title: string,
     description?: string,
     tags?: string[],
+    embedType?: string,
+    embedData?: any,
   ) => {
     if (!user || !ringId) return null;
 
@@ -195,26 +199,78 @@ export function useRingData(ringId: string) {
     }
 
     try {
+      // First, try to insert with embed fields
+      let insertData: any = {
+        ring_id: ringId,
+        user_id: user.id,
+        url,
+        title,
+        description,
+      };
+
+      // Only add embed fields if they are provided
+      if (embedType && embedData) {
+        insertData.embed_type = embedType;
+        insertData.embed_data = embedData;
+      }
+
+      console.log("Attempting to insert link data:", insertData);
+
       const { data: linkData, error: linkError } = await supabase
         .from("shared_links")
-        .insert({
-          ring_id: ringId,
-          user_id: user.id,
-          url,
-          title,
-          description,
-        })
+        .insert(insertData)
         .select("*")
         .single();
 
-      if (linkError) throw linkError;
+      if (linkError) {
+        console.error("Link insertion error:", linkError);
+
+        // If the error is about embed fields not existing, try without them
+        if (
+          linkError.message?.includes("embed_data") ||
+          linkError.message?.includes("embed_type")
+        ) {
+          console.log("Retrying without embed fields...");
+
+          const fallbackData = {
+            ring_id: ringId,
+            user_id: user.id,
+            url,
+            title,
+            description,
+          };
+
+          const { data: fallbackLinkData, error: fallbackError } =
+            await supabase
+              .from("shared_links")
+              .insert(fallbackData)
+              .select("*")
+              .single();
+
+          if (fallbackError) throw fallbackError;
+
+          // Add to local state
+          setLinks((prev) => [fallbackLinkData, ...prev]);
+
+          toast({
+            title: "Success",
+            description: "Link shared to ring! (Embed features not available)",
+          });
+
+          return fallbackLinkData;
+        }
+
+        throw linkError;
+      }
 
       // Add to local state
       setLinks((prev) => [linkData, ...prev]);
 
       toast({
         title: "Success",
-        description: "Link shared to ring!",
+        description: embedType
+          ? "Link with embed shared to ring!"
+          : "Link shared to ring!",
       });
 
       return linkData;
@@ -222,7 +278,7 @@ export function useRingData(ringId: string) {
       console.error("Error sharing link:", error);
       toast({
         title: "Error",
-        description: "Failed to share link",
+        description: `Failed to share link: ${error.message || "Unknown error"}`,
         variant: "destructive",
       });
       return null;

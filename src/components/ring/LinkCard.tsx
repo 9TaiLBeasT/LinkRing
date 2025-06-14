@@ -9,10 +9,12 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { ExternalLink, MessageCircle, Zap } from "lucide-react";
+import { ExternalLink, MessageCircle, Zap, Play } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { SharedLink } from "@/hooks/useRingData";
 import { formatDistanceToNow } from "date-fns";
+import EmbedPlayer from "@/components/ui/embed-player";
+import { getPlatformDisplayName, getPlatformIcon } from "@/lib/embedUtils";
 
 interface LinkCardProps {
   link: SharedLink;
@@ -130,6 +132,35 @@ const LinkCard = ({ link, className }: LinkCardProps) => {
       <div className="absolute inset-0 bg-gradient-to-br from-neon-green/5 via-transparent to-blue-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
 
       <CardContent className="p-6 space-y-4 relative z-10">
+        {/* Embedded Content */}
+        {link.embed_type && link.embed_data && (
+          <div className="mb-6">
+            <div className="flex items-center gap-2 mb-3">
+              <Badge
+                variant="outline"
+                className="border-blue-500/40 text-blue-400 font-mono text-xs"
+              >
+                {getPlatformIcon(link.embed_type)}{" "}
+                {getPlatformDisplayName(link.embed_type as any)}
+              </Badge>
+              <div className="flex-1 h-px bg-gradient-to-r from-blue-500/30 to-transparent" />
+            </div>
+            <EmbedPlayer
+              embedData={{
+                ...link.embed_data,
+                type: link.embed_type,
+                originalUrl: link.url,
+              }}
+              className="w-full"
+              autoPlay={false}
+              showControls={true}
+              onError={(error) => {
+                console.error("Embed player error:", error);
+              }}
+            />
+          </div>
+        )}
+
         {/* Enhanced Link Preview */}
         <div className="flex items-start gap-4">
           <div className="shrink-0 relative">

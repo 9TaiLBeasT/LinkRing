@@ -103,8 +103,36 @@ const RingPage = () => {
     title: string,
     description?: string,
     tags?: string[],
+    embedType?: string,
+    embedData?: any,
   ) => {
-    await shareLink(url, title, description, tags);
+    try {
+      console.log("RingPage: Handling share link request", {
+        url,
+        title,
+        description,
+        tags,
+        embedType,
+        embedData,
+      });
+
+      const result = await shareLink(
+        url,
+        title,
+        description,
+        tags,
+        embedType,
+        embedData,
+      );
+
+      if (result) {
+        console.log("RingPage: Link shared successfully", result);
+      } else {
+        console.log("RingPage: Link sharing failed or was cancelled");
+      }
+    } catch (error) {
+      console.error("RingPage: Error in handleShareLink:", error);
+    }
   };
 
   return (

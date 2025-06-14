@@ -3,8 +3,25 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { Send, Loader2, X, Plus, Link, Sparkles } from "lucide-react";
+import {
+  Send,
+  Loader2,
+  X,
+  Plus,
+  Link,
+  Sparkles,
+  Play,
+  Eye,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
+import {
+  detectPlatform,
+  extractEmbedData,
+  getPlatformDisplayName,
+  getPlatformIcon,
+  isEmbeddable,
+} from "@/lib/embedUtils";
+import EmbedPlayer from "@/components/ui/embed-player";
 
 interface LinkSubmissionFormProps {
   onSubmit: (
@@ -12,6 +29,8 @@ interface LinkSubmissionFormProps {
     title: string,
     description?: string,
     tags?: string[],
+    embedType?: string,
+    embedData?: any,
   ) => Promise<void>;
   className?: string;
 }
@@ -47,6 +66,8 @@ const LinkSubmissionForm = ({
   const [loading, setLoading] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [embedPreview, setEmbedPreview] = useState<any>(null);
+  const [showEmbedPreview, setShowEmbedPreview] = useState(false);
 
   const extractTitleFromUrl = async (urlString: string) => {
     try {
@@ -61,9 +82,32 @@ const LinkSubmissionForm = ({
     const newUrl = e.target.value;
     setUrl(newUrl);
 
-    if (newUrl && !title) {
-      const extractedTitle = await extractTitleFromUrl(newUrl);
-      setTitle(extractedTitle);
+    // Check if URL is embeddable and extract embed data
+    if (newUrl) {
+      const embedData = extractEmbedData(newUrl);
+      if (embedData) {
+        setEmbedPreview(embedData);
+        setShowEmbedPreview(true);
+
+        // Auto-set title if not already set
+        if (!title) {
+          const platformName = getPlatformDisplayName(embedData.type as any);
+          const extractedTitle = embedData.title || `${platformName} Content`;
+          setTitle(extractedTitle);
+        }
+      } else {
+        setEmbedPreview(null);
+        setShowEmbedPreview(false);
+
+        // Fallback title extraction for non-embeddable links
+        if (!title) {
+          const extractedTitle = await extractTitleFromUrl(newUrl);
+          setTitle(extractedTitle);
+        }
+      }
+    } else {
+      setEmbedPreview(null);
+      setShowEmbedPreview(false);
     }
   };
 
@@ -75,11 +119,22 @@ const LinkSubmissionForm = ({
     setIsSubmitting(true);
 
     try {
+      console.log("Submitting link with embed data:", {
+        url: url.trim(),
+        title: title.trim(),
+        description: description.trim() || undefined,
+        tags: selectedTags.length > 0 ? selectedTags : undefined,
+        embedType: embedPreview?.type || undefined,
+        embedData: embedPreview || undefined,
+      });
+
       await onSubmit(
         url.trim(),
         title.trim(),
         description.trim() || undefined,
         selectedTags.length > 0 ? selectedTags : undefined,
+        embedPreview?.type || undefined,
+        embedPreview || undefined,
       );
 
       // Reset form with animation
@@ -88,6 +143,8 @@ const LinkSubmissionForm = ({
       setDescription("");
       setSelectedTags([]);
       setIsExpanded(false);
+      setEmbedPreview(null);
+      setShowEmbedPreview(false);
     } catch (error) {
       console.error("Error submitting link:", error);
     } finally {
@@ -142,12 +199,19 @@ const LinkSubmissionForm = ({
                 className={cn(
                   "neon-input text-lg py-3 pl-4 pr-12 transition-all duration-300",
                   url && "border-neon-green/60 shadow-neon",
+                  embedPreview && "border-blue-500/60 shadow-blue-500/20",
                 )}
                 required
                 onFocus={() => setIsExpanded(true)}
               />
               {url && (
-                <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                <div className="absolute right-3 top-1/2 transform -translate-y-1/2 flex items-center gap-2">
+                  {embedPreview && (
+                    <div className="flex items-center gap-1 text-xs text-blue-400 bg-blue-500/20 px-2 py-1 rounded-full">
+                      <span>{getPlatformIcon(embedPreview.type)}</span>
+                      <span className="font-mono">Embeddable</span>
+                    </div>
+                  )}
                   <div className="w-2 h-2 bg-neon-green rounded-full animate-pulse" />
                 </div>
               )}
@@ -178,6 +242,52 @@ const LinkSubmissionForm = ({
               )}
             </Button>
           </div>
+
+          {/* Embed Preview */}
+          {showEmbedPreview && embedPreview && (
+            <div className="space-y-4 animate-slide-in-bottom">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Play className="h-5 w-5 text-blue-400" />
+                  <h3 className="text-lg font-bold text-blue-400 font-mono">
+                    Embed Preview
+                  </h3>
+                  <Badge className="bg-blue-500/20 text-blue-400 border-blue-500/30">
+                    {getPlatformDisplayName(embedPreview.type)}
+                  </Badge>
+                </div>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowEmbedPreview(false)}
+                  className="text-gray-400 hover:text-white"
+                >
+                  <Eye className="h-4 w-4 mr-1" />
+                  Hide Preview
+                </Button>
+              </div>
+
+              <div className="bg-neon-dark/50 p-4 rounded-xl border border-blue-500/30">
+                <EmbedPlayer
+                  embedData={embedPreview}
+                  compact={true}
+                  autoPlay={false}
+                  className="max-w-md mx-auto"
+                />
+              </div>
+
+              <div className="text-center">
+                <p className="text-sm text-gray-400 mb-2">
+                  This link will be embedded directly in your ring feed!
+                </p>
+                <div className="flex items-center justify-center gap-2 text-xs text-blue-400">
+                  <Sparkles className="h-3 w-3" />
+                  <span>Enhanced viewing experience for ring members</span>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Expanded Form */}
           {(isExpanded || url) && (

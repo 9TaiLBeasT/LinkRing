@@ -107,6 +107,8 @@ export type Database = {
         Row: {
           created_at: string | null
           description: string | null
+          embed_data: Json | null
+          embed_type: string | null
           id: string
           ring_id: string | null
           title: string
@@ -116,6 +118,8 @@ export type Database = {
         Insert: {
           created_at?: string | null
           description?: string | null
+          embed_data?: Json | null
+          embed_type?: string | null
           id?: string
           ring_id?: string | null
           title: string
@@ -125,6 +129,8 @@ export type Database = {
         Update: {
           created_at?: string | null
           description?: string | null
+          embed_data?: Json | null
+          embed_type?: string | null
           id?: string
           ring_id?: string | null
           title?: string
