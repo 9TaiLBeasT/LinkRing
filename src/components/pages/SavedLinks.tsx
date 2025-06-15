@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -28,19 +28,19 @@ type SavedLink = {
     id: string;
     title: string;
     url: string;
-    description?: string;
+    description?: string | null;
     created_at: string;
     user_id: string;
-    ring_id?: string;
+    ring_id?: string | null;
     user?: {
-      full_name?: string;
-      email?: string;
-      avatar_url?: string;
+      full_name?: string | null;
+      email?: string | null;
+      avatar_url?: string | null;
     };
     ring?: {
       name: string;
     };
-  };
+  } | null;
 };
 
 const SavedLinks = () => {
@@ -50,7 +50,7 @@ const SavedLinks = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
 
-  const fetchSavedLinks = async () => {
+  const fetchSavedLinks = useCallback(async () => {
     if (!user) return;
 
     try {
@@ -90,18 +90,18 @@ const SavedLinks = () => {
         ...new Set(
           savedLinksData
             .map((sl) => sl.shared_links)
-            .filter(Boolean)
-            .map((link) => link?.user_id)
-            .filter(Boolean),
+            .filter((link): link is NonNullable<typeof link> => Boolean(link))
+            .map((link) => link.user_id)
+            .filter((id): id is string => Boolean(id)),
         ),
       ];
       const ringIds = [
         ...new Set(
           savedLinksData
             .map((sl) => sl.shared_links)
-            .filter(Boolean)
-            .map((link) => link?.ring_id)
-            .filter(Boolean),
+            .filter((link): link is NonNullable<typeof link> => Boolean(link))
+            .map((link) => link.ring_id)
+            .filter((id): id is string => Boolean(id)),
         ),
       ];
 
@@ -141,28 +141,28 @@ const SavedLinks = () => {
             created_at: savedLink.created_at,
             shared_links: {
               id: link.id,
-              title: link.title,
-              url: link.url,
-              description: link.description,
-              created_at: link.created_at,
-              user_id: link.user_id,
-              ring_id: link.ring_id,
+              title: link.title || "",
+              url: link.url || "",
+              description: link.description || null,
+              created_at: link.created_at || new Date().toISOString(),
+              user_id: link.user_id || "",
+              ring_id: link.ring_id || null,
               user: userData
                 ? {
-                    full_name: userData.full_name,
-                    email: userData.email,
-                    avatar_url: userData.avatar_url,
+                    full_name: userData.full_name || null,
+                    email: userData.email || null,
+                    avatar_url: userData.avatar_url || null,
                   }
                 : undefined,
               ring: ringData
                 ? {
-                    name: ringData.name,
+                    name: ringData.name || "",
                   }
                 : undefined,
             },
           };
         })
-        .filter(Boolean) as SavedLink[];
+        .filter((item): item is SavedLink => Boolean(item));
 
       setSavedLinks(processedLinks);
     } catch (error: any) {
@@ -175,7 +175,7 @@ const SavedLinks = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user, toast]);
 
   const handleRemoveSavedLink = async (savedLinkId: string) => {
     try {
@@ -203,7 +203,7 @@ const SavedLinks = () => {
 
   useEffect(() => {
     fetchSavedLinks();
-  }, [user]);
+  }, [fetchSavedLinks]);
 
   const LinkCard = ({ savedLink }: { savedLink: SavedLink }) => {
     const link = savedLink.shared_links;
@@ -278,7 +278,9 @@ const SavedLinks = () => {
               <Badge
                 variant="outline"
                 className="text-xs border-neon-green/30 text-neon-green hover:bg-neon-green/10 cursor-pointer transition-all duration-300 hover:scale-105"
-                onClick={() => navigate(`/ring/${link.ring_id}`)}
+                onClick={() =>
+                  link.ring_id && navigate(`/ring/${link.ring_id}`)
+                }
               >
                 {link.ring.name}
               </Badge>

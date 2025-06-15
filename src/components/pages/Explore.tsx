@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -71,7 +71,15 @@ interface ExploreLink extends SharedLink {
   saved?: boolean;
 }
 
-interface TrendingRing extends Ring {
+interface TrendingRing {
+  id: string;
+  name: string;
+  description: string | null;
+  created_by: string;
+  is_public: boolean;
+  created_at: string;
+  invite_code: string;
+  updated_at: string;
   member_count: number;
   link_count: number;
 }
@@ -176,185 +184,200 @@ const Explore = () => {
     return () => {
       if (observerRef.current) observerRef.current.disconnect();
     };
-  }, [hasMore, isLoadingMore]);
+  }, [hasMore, isLoadingMore, loadMoreLinks]);
 
-  const fetchLinks = async (pageNum = 1, reset = true) => {
-    try {
-      if (reset) {
-        setLoading(true);
-        setError(null);
-      } else {
-        setIsLoadingMore(true);
-      }
-
-      // First get the shared links
-      let linksQuery = supabase
-        .from("shared_links")
-        .select("*")
-        .order("created_at", { ascending: sortBy !== "recent" })
-        .range((pageNum - 1) * 12, pageNum * 12 - 1);
-
-      // Apply search filter
-      if (searchQuery.trim()) {
-        linksQuery = linksQuery.or(
-          `title.ilike.%${searchQuery}%,description.ilike.%${searchQuery}%,url.ilike.%${searchQuery}%`,
-        );
-      }
-
-      // Apply date filter
-      const now = new Date();
-      let dateThreshold: Date;
-      switch (dateFilter) {
-        case "today":
-          dateThreshold = new Date(now.getTime() - 24 * 60 * 60 * 1000);
-          break;
-        case "week":
-          dateThreshold = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-          break;
-        case "month":
-          dateThreshold = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
-          break;
-        default:
-          dateThreshold = new Date(0);
-      }
-      if (dateFilter !== "all") {
-        linksQuery = linksQuery.gte("created_at", dateThreshold.toISOString());
-      }
-
-      // Filter by user's rings if enabled, otherwise only show public rings
-      if (showOnlyMyRings && user) {
-        const { data: userRings } = await supabase
-          .from("ring_members")
-          .select("ring_id")
-          .eq("user_id", user.id);
-
-        if (userRings && userRings.length > 0) {
-          const ringIds = userRings.map((r) => r.ring_id);
-          linksQuery = linksQuery.in("ring_id", ringIds);
+  const fetchLinks = useCallback(
+    async (pageNum = 1, reset = true) => {
+      try {
+        if (reset) {
+          setLoading(true);
+          setError(null);
         } else {
-          // User has no rings, return empty result
-          if (reset) setLinks([]);
-          setHasMore(false);
-          return;
+          setIsLoadingMore(true);
         }
-      } else {
-        // Get all rings for now since is_public might not be properly set
-        const { data: publicRings } = await supabase
-          .from("rings")
-          .select("id, is_public");
 
-        if (publicRings && publicRings.length > 0) {
-          // Filter for public rings, but if none are marked as public, show all
-          const publicRingIds = publicRings
-            .filter((r) => r.is_public === true)
-            .map((r) => r.id);
+        // First get the shared links
+        let linksQuery = supabase
+          .from("shared_links")
+          .select("*")
+          .order("created_at", { ascending: sortBy !== "recent" })
+          .range((pageNum - 1) * 12, pageNum * 12 - 1);
 
-          if (publicRingIds.length > 0) {
-            linksQuery = linksQuery.in("ring_id", publicRingIds);
+        // Apply search filter
+        if (searchQuery.trim()) {
+          linksQuery = linksQuery.or(
+            `title.ilike.%${searchQuery}%,description.ilike.%${searchQuery}%,url.ilike.%${searchQuery}%`,
+          );
+        }
+
+        // Apply date filter
+        const now = new Date();
+        let dateThreshold: Date;
+        switch (dateFilter) {
+          case "today":
+            dateThreshold = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+            break;
+          case "week":
+            dateThreshold = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+            break;
+          case "month":
+            dateThreshold = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+            break;
+          default:
+            dateThreshold = new Date(0);
+        }
+        if (dateFilter !== "all") {
+          linksQuery = linksQuery.gte(
+            "created_at",
+            dateThreshold.toISOString(),
+          );
+        }
+
+        // Filter by user's rings if enabled, otherwise only show public rings
+        if (showOnlyMyRings && user) {
+          const { data: userRings } = await supabase
+            .from("ring_members")
+            .select("ring_id")
+            .eq("user_id", user.id);
+
+          if (userRings && userRings.length > 0) {
+            const ringIds = userRings.map((r) => r.ring_id);
+            linksQuery = linksQuery.in("ring_id", ringIds);
           } else {
-            // If no rings are marked as public, show all rings
-            const allRingIds = publicRings.map((r) => r.id);
-            linksQuery = linksQuery.in("ring_id", allRingIds);
+            // User has no rings, return empty result
+            if (reset) setLinks([]);
+            setHasMore(false);
+            return;
           }
         } else {
-          // No rings at all, return empty result
+          // Get all rings for now since is_public might not be properly set
+          const { data: publicRings } = await supabase
+            .from("rings")
+            .select("id, is_public");
+
+          if (publicRings && publicRings.length > 0) {
+            // Filter for public rings, but if none are marked as public, show all
+            const publicRingIds = publicRings
+              .filter((r) => r.is_public === true)
+              .map((r) => r.id);
+
+            if (publicRingIds.length > 0) {
+              linksQuery = linksQuery.in("ring_id", publicRingIds);
+            } else {
+              // If no rings are marked as public, show all rings
+              const allRingIds = publicRings.map((r) => r.id);
+              linksQuery = linksQuery.in("ring_id", allRingIds);
+            }
+          } else {
+            // No rings at all, return empty result
+            if (reset) setLinks([]);
+            setHasMore(false);
+            return;
+          }
+        }
+
+        const { data: linksData, error: linksError } = await linksQuery;
+
+        if (linksError) throw linksError;
+
+        if (!linksData || linksData.length === 0) {
           if (reset) setLinks([]);
           setHasMore(false);
           return;
         }
+
+        // Get user data for the links
+        const userIds = [
+          ...new Set(linksData.map((link) => link.user_id).filter(Boolean)),
+        ];
+        const ringIds = [
+          ...new Set(linksData.map((link) => link.ring_id).filter(Boolean)),
+        ];
+
+        const [usersData, ringsData] = await Promise.all([
+          userIds.length > 0
+            ? supabase
+                .from("users")
+                .select("id, full_name, email, avatar_url")
+                .in("id", userIds)
+            : Promise.resolve({ data: [] }),
+          ringIds.length > 0
+            ? supabase.from("rings").select("id, name").in("id", ringIds)
+            : Promise.resolve({ data: [] }),
+        ]);
+
+        // Create lookup maps
+        const usersMap = new Map(
+          (usersData.data || []).map((user) => [user.id, user]),
+        );
+        const ringsMap = new Map(
+          (ringsData.data || []).map((ring) => [ring.id, ring]),
+        );
+
+        // Process the links with user and ring data
+        const processedLinks: ExploreLink[] = linksData.map((link) => {
+          const userData = link.user_id ? usersMap.get(link.user_id) : null;
+          const ringData = link.ring_id ? ringsMap.get(link.ring_id) : null;
+
+          return {
+            ...link,
+            user: userData
+              ? {
+                  full_name: userData.full_name,
+                  email: userData.email,
+                  avatar_url: userData.avatar_url,
+                }
+              : undefined,
+            ring: ringData
+              ? {
+                  name: ringData.name,
+                }
+              : undefined,
+            saved: savedLinks.has(link.id),
+          };
+        });
+
+        if (reset) {
+          setLinks(processedLinks);
+        } else {
+          setLinks((prev) => [...prev, ...processedLinks]);
+        }
+
+        setHasMore(processedLinks.length === 12);
+      } catch (error: any) {
+        console.error("Error fetching links:", error);
+        const errorMessage = error.message || "Failed to load links";
+        setError(errorMessage);
+        toast({
+          title: "Error",
+          description: errorMessage,
+          variant: "destructive",
+        });
+      } finally {
+        setLoading(false);
+        setIsLoadingMore(false);
       }
+    },
+    [
+      searchQuery,
+      selectedCategory,
+      sortBy,
+      dateFilter,
+      showOnlyMyRings,
+      user,
+      savedLinks,
+      toast,
+    ],
+  );
 
-      const { data: linksData, error: linksError } = await linksQuery;
-
-      if (linksError) throw linksError;
-
-      if (!linksData || linksData.length === 0) {
-        if (reset) setLinks([]);
-        setHasMore(false);
-        return;
-      }
-
-      // Get user data for the links
-      const userIds = [
-        ...new Set(linksData.map((link) => link.user_id).filter(Boolean)),
-      ];
-      const ringIds = [
-        ...new Set(linksData.map((link) => link.ring_id).filter(Boolean)),
-      ];
-
-      const [usersData, ringsData] = await Promise.all([
-        userIds.length > 0
-          ? supabase
-              .from("users")
-              .select("id, full_name, email, avatar_url")
-              .in("id", userIds)
-          : Promise.resolve({ data: [] }),
-        ringIds.length > 0
-          ? supabase.from("rings").select("id, name").in("id", ringIds)
-          : Promise.resolve({ data: [] }),
-      ]);
-
-      // Create lookup maps
-      const usersMap = new Map(
-        (usersData.data || []).map((user) => [user.id, user]),
-      );
-      const ringsMap = new Map(
-        (ringsData.data || []).map((ring) => [ring.id, ring]),
-      );
-
-      // Process the links with user and ring data
-      const processedLinks: ExploreLink[] = linksData.map((link) => {
-        const userData = link.user_id ? usersMap.get(link.user_id) : null;
-        const ringData = link.ring_id ? ringsMap.get(link.ring_id) : null;
-
-        return {
-          ...link,
-          user: userData
-            ? {
-                full_name: userData.full_name,
-                email: userData.email,
-                avatar_url: userData.avatar_url,
-              }
-            : undefined,
-          ring: ringData
-            ? {
-                name: ringData.name,
-              }
-            : undefined,
-          saved: savedLinks.has(link.id),
-        };
-      });
-
-      if (reset) {
-        setLinks(processedLinks);
-      } else {
-        setLinks((prev) => [...prev, ...processedLinks]);
-      }
-
-      setHasMore(processedLinks.length === 12);
-    } catch (error: any) {
-      console.error("Error fetching links:", error);
-      const errorMessage = error.message || "Failed to load links";
-      setError(errorMessage);
-      toast({
-        title: "Error",
-        description: errorMessage,
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
-      setIsLoadingMore(false);
-    }
-  };
-
-  const loadMoreLinks = async () => {
+  const loadMoreLinks = useCallback(async () => {
     if (!hasMore || isLoadingMore) return;
     const nextPage = page + 1;
     setPage(nextPage);
     await fetchLinks(nextPage, false);
-  };
+  }, [hasMore, isLoadingMore, page, fetchLinks]);
 
-  const fetchTrendingRings = async () => {
+  const fetchTrendingRings = useCallback(async () => {
     try {
       // Fetch only public rings for trending section
       const { data: ringsData, error: ringsError } = await supabase
@@ -388,10 +411,10 @@ const Explore = () => {
 
         return {
           id: ring.id,
-          name: ring.name,
-          description: ring.description,
-          created_by: ring.created_by,
-          is_public: ring.is_public,
+          name: ring.name || "",
+          description: ring.description || null,
+          created_by: ring.created_by || "",
+          is_public: ring.is_public || false,
           created_at: ring.created_at || new Date().toISOString(),
           invite_code: ring.invite_code || "",
           updated_at: ring.updated_at || new Date().toISOString(),
@@ -410,7 +433,7 @@ const Explore = () => {
     } catch (error: any) {
       console.error("Error fetching trending rings:", error);
     }
-  };
+  }, []);
 
   const handleSaveLink = async (linkId: string) => {
     if (!user) {
@@ -488,7 +511,7 @@ const Explore = () => {
   const filteredLinks = links; // All filtering is now done in the database query
 
   // Fetch saved links for the current user
-  const fetchSavedLinks = async () => {
+  const fetchSavedLinks = useCallback(async () => {
     if (!user) return;
 
     try {
@@ -507,7 +530,7 @@ const Explore = () => {
     } catch (error: any) {
       console.error("Error fetching saved links:", error);
     }
-  };
+  }, [user]);
 
   useEffect(() => {
     fetchLinks();
