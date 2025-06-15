@@ -86,20 +86,20 @@ const SavedLinks = () => {
       }
 
       // Get user and ring data for the links
+      const validLinks = savedLinksData
+        .map((sl) => sl.shared_links)
+        .filter((link): link is NonNullable<typeof link> => Boolean(link));
+
       const userIds = [
         ...new Set(
-          savedLinksData
-            .map((sl) => sl.shared_links)
-            .filter((link): link is NonNullable<typeof link> => Boolean(link))
+          validLinks
             .map((link) => link.user_id)
             .filter((id): id is string => Boolean(id)),
         ),
       ];
       const ringIds = [
         ...new Set(
-          savedLinksData
-            .map((sl) => sl.shared_links)
-            .filter((link): link is NonNullable<typeof link> => Boolean(link))
+          validLinks
             .map((link) => link.ring_id)
             .filter((id): id is string => Boolean(id)),
         ),
@@ -162,9 +162,9 @@ const SavedLinks = () => {
             },
           };
         })
-        .filter((item): item is NonNullable<typeof item> =>
-          Boolean(item),
-        ) as SavedLink[];
+        .filter((item): item is SavedLink =>
+          Boolean(item && item.shared_links),
+        );
 
       setSavedLinks(processedLinks);
     } catch (error: any) {
