@@ -355,7 +355,7 @@ const Explore = () => {
     await fetchLinks(nextPage, false);
   }, [hasMore, isLoadingMore, page, fetchLinks]);
 
-  // Infinite scroll setup
+  // Infinite scroll setup - moved after loadMoreLinks definition
   useEffect(() => {
     if (observerRef.current) observerRef.current.disconnect();
 
