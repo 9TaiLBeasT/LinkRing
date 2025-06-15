@@ -162,7 +162,9 @@ const SavedLinks = () => {
             },
           };
         })
-        .filter((item): item is SavedLink => Boolean(item));
+        .filter((item): item is NonNullable<typeof item> =>
+          Boolean(item),
+        ) as SavedLink[];
 
       setSavedLinks(processedLinks);
     } catch (error: any) {
