@@ -53,7 +53,9 @@ import { Badge } from "@/components/ui/badge";
 import Sidebar, { SidebarToggle } from "../dashboard/layout/Sidebar";
 import { cn } from "@/lib/utils";
 
-type UserProfile = Database["public"]["Tables"]["users"]["Row"];
+type UserProfile = Database["public"]["Tables"]["users"]["Row"] & {
+  bio?: string;
+};
 type Ring = Database["public"]["Tables"]["rings"]["Row"] & {
   member_count?: number;
   is_muted?: boolean;
@@ -141,6 +143,10 @@ const Settings = () => {
           token_identifier: user.id,
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
+          avatar_url: null,
+          image: null,
+          name: null,
+          username: "",
         });
         return;
       }
@@ -172,6 +178,10 @@ const Settings = () => {
             token_identifier: user.id,
             created_at: new Date().toISOString(),
             updated_at: new Date().toISOString(),
+            avatar_url: null,
+            image: null,
+            name: null,
+            username: "",
           });
         } else {
           setProfile(newProfile);
@@ -189,6 +199,10 @@ const Settings = () => {
         token_identifier: user.id,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
+        avatar_url: null,
+        image: null,
+        name: null,
+        username: "",
       });
     }
   };
@@ -219,7 +233,8 @@ const Settings = () => {
 
       const userRings = data
         ?.map((item) => item.rings)
-        .filter(Boolean) as Ring[];
+        .filter(Boolean)
+        .flat() as Ring[];
       setRings(userRings || []);
     } catch (error) {
       console.error("Error in fetchUserRings:", error);

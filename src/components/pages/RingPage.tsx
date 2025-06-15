@@ -10,6 +10,7 @@ import { useAuth } from "../../../supabase/auth";
 import Sidebar, { SidebarToggle } from "@/components/dashboard/layout/Sidebar";
 import JoinRingDialog from "@/components/dashboard/JoinRingDialog";
 import { Globe, UserPlus, Copy } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 const RingPage = () => {
   const { id } = useParams<{ id: string }>();

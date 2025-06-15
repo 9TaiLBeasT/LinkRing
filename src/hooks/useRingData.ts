@@ -342,7 +342,8 @@ export function useRingData(ringId: string) {
         return linkData;
       } catch (error: any) {
         // Remove optimistic update on error
-        setLinks((prev) => prev.filter((l) => l.id !== tempLink.id));
+        const tempLinkId = `temp_${Date.now()}`;
+        setLinks((prev) => prev.filter((l) => l.id !== tempLinkId));
 
         console.error("Error sharing link:", error);
         toast({

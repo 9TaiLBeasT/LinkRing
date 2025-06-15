@@ -386,6 +386,9 @@ const Explore = () => {
 
         return {
           ...ring,
+          created_at: ring.created_at || new Date().toISOString(),
+          invite_code: ring.invite_code || "",
+          updated_at: ring.updated_at || new Date().toISOString(),
           member_count: memberCount,
           link_count: linkCount,
         };

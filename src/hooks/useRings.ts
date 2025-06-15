@@ -202,7 +202,7 @@ export function useRings() {
             .maybeSingle();
 
           // If there's an error or no existing record, the code is unique
-          isUnique = error || !existing;
+          isUnique = !!error || !existing;
         } while (!isUnique);
 
         // Create the ring

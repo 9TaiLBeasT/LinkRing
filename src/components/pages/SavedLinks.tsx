@@ -120,7 +120,18 @@ const SavedLinks = () => {
       // Process the saved links with user and ring data
       const processedLinks: SavedLink[] = savedLinksData.map((savedLink) => {
         const link = savedLink.shared_links;
-        if (!link) return savedLink as SavedLink;
+        if (!link) {
+          return {
+            ...savedLink,
+            shared_links: {
+              id: "",
+              title: "",
+              url: "",
+              created_at: "",
+              user_id: "",
+            },
+          } as SavedLink;
+        }
 
         const userData = link.user_id ? usersMap.get(link.user_id) : null;
         const ringData = link.ring_id ? ringsMap.get(link.ring_id) : null;

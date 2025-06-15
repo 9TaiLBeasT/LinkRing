@@ -14,7 +14,11 @@ import { cn } from "@/lib/utils";
 import { SharedLink } from "@/hooks/useRingData";
 import { formatDistanceToNow } from "date-fns";
 import EmbedPlayer from "@/components/ui/embed-player";
-import { getPlatformDisplayName, getPlatformIcon } from "@/lib/embedUtils";
+import {
+  getPlatformDisplayName,
+  getPlatformIcon,
+  EmbedType,
+} from "@/lib/embedUtils";
 import ChatIcon from "@/components/chat/ChatIcon";
 import ChatPanel from "@/components/chat/ChatPanel";
 import { useLinkChat } from "@/hooks/useLinkChat";
@@ -154,8 +158,8 @@ const LinkCard = ({ link, className }: LinkCardProps) => {
                 variant="outline"
                 className="border-blue-500/40 text-blue-400 font-mono text-xs"
               >
-                {getPlatformIcon(link.embed_type)}{" "}
-                {getPlatformDisplayName(link.embed_type as any)}
+                {getPlatformIcon(link.embed_type as EmbedType)}{" "}
+                {getPlatformDisplayName(link.embed_type as EmbedType)}
               </Badge>
               <div className="flex-1 h-px bg-gradient-to-r from-blue-500/30 to-transparent" />
             </div>
