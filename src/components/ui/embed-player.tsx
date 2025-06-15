@@ -76,31 +76,31 @@ const EmbedPlayer: React.FC<EmbedPlayerProps> = ({
       case "figma":
         return "450px";
       case "canva":
-        return `<iframe src="${embedData.embedUrl}" ${baseProps} allowfullscreen></iframe>`;
+        return "400px";
       case "instagram":
-        return `<iframe src="${embedData.embedUrl}" ${baseProps} scrolling="no" allowtransparency="true"></iframe>`;
+        return "400px";
       case "tiktok":
-        return `<iframe src="${embedData.embedUrl}" ${baseProps} allowfullscreen scrolling="no"></iframe>`;
+        return "500px";
       case "pdf":
       case "docx":
       case "xlsx":
       case "pptx":
       case "google_docs":
-        return `<iframe src="${embedData.embedUrl}" ${baseProps} allowfullscreen></iframe>`;
+        return "600px";
       case "notion":
-        return `<iframe src="${embedData.embedUrl}" ${baseProps} allowfullscreen></iframe>`;
+        return "500px";
       case "github":
-        return `<iframe src="${embedData.embedUrl}" ${baseProps} allowfullscreen></iframe>`;
+        return "400px";
       case "dribbble":
-        return `<iframe src="${embedData.embedUrl}" ${baseProps} allowfullscreen></iframe>`;
+        return "400px";
       case "behance":
-        return `<iframe src="${embedData.embedUrl}" ${baseProps} allowfullscreen></iframe>`;
+        return "400px";
       case "vimeo":
-        return `<iframe src="${embedData.embedUrl}" ${baseProps} allow="autoplay; fullscreen; picture-in-picture" allowfullscreen></iframe>`;
+        return "315px";
       case "twitch":
-        return `<iframe src="${embedData.embedUrl}" ${baseProps} allowfullscreen></iframe>`;
+        return "400px";
       default:
-        return "";
+        return "400px";
     }
   };
 

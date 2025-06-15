@@ -1,4 +1,4 @@
-import { useCallback, useRef, useEffect } from "react";
+import { useCallback, useRef, useEffect, useState } from "react";
 
 // Debounce hook for performance optimization
 export function useDebounce<T extends (...args: any[]) => any>(
@@ -153,6 +153,3 @@ export function useConnectionStatus() {
 
   return isOnline;
 }
-
-// Import React for useState
-import { useState } from "react";

@@ -356,13 +356,6 @@ export function useRingData(ringId: string) {
     [userId, memoizedRingId, toast],
   );
 
-  toast({
-    title: "Success",
-    description: embedType
-      ? "Link with embed shared to ring!"
-      : "Link shared to ring!",
-  });
-
   const copyInviteCode = useCallback(async () => {
     if (!ring) return;
 

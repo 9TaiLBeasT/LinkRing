@@ -111,6 +111,7 @@
     z-index: 1;
     pointer-events: auto !important;
     cursor: text !important;
+    line-height: 1.5;
   }
 
   @media (max-width: 768px) {
@@ -153,6 +154,8 @@
     overflow: hidden;
     touch-action: manipulation;
     -webkit-tap-highlight-color: transparent;
+    font-weight: 600;
+    letter-spacing: 0.025em;
   }
 
   @media (max-width: 768px) {
@@ -193,6 +196,7 @@
     backdrop-filter: blur(10px);
     transition: all 0.3s ease;
     position: relative;
+    will-change: transform;
   }
 
   @media (max-width: 768px) {

@@ -685,6 +685,15 @@ const Settings = () => {
                               variant="ghost"
                               size="sm"
                               className="text-neon-green hover:text-neon-green/80"
+                              onClick={() => {
+                                toast({
+                                  title: "Coming Soon",
+                                  description:
+                                    "Session management will be available in a future update.",
+                                  className:
+                                    "bg-neon-dark border-neon-green text-neon-green",
+                                });
+                              }}
                             >
                               View Active Sessions
                             </Button>
