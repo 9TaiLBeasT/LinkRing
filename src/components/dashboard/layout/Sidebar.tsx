@@ -24,7 +24,7 @@ import {
 import { useRings } from "@/hooks/useRings";
 import CreateRingDialog from "../CreateRingDialog";
 import JoinRingDialog from "../JoinRingDialog";
-import CreateWatchPartyDialog from "@/components/watchparty/CreateWatchPartyDialog";
+import { useToast } from "@/components/ui/use-toast";
 
 interface NavItem {
   icon: React.ReactNode;
@@ -63,6 +63,7 @@ const Sidebar = ({
 }: SidebarProps) => {
   const { rings, loading, error } = useRings();
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
@@ -88,7 +89,12 @@ const Sidebar = ({
     } else if (label === "Explore") {
       navigate("/explore");
     } else if (label === "WatchParties") {
-      navigate("/explore-watchparties");
+      toast({
+        title: "Coming Soon! 🎬",
+        description:
+          "WatchParties feature is being improved and will be available soon!",
+        className: "bg-neon-dark border-neon-green text-neon-green",
+      });
     } else if (label === "Leaderboard") {
       navigate("/leaderboard");
     } else if (label === "Weekly Digest") {
@@ -203,25 +209,12 @@ const Sidebar = ({
                   <div className="absolute left-full top-0 ml-2 w-48 bg-neon-gray/90 backdrop-blur-md border border-neon-green/20 rounded-xl p-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-50">
                     <div className="space-y-1">
                       <div className="px-3 py-2 text-xs text-neon-green/70 font-medium">
-                        Live Sessions
+                        Coming Soon
                       </div>
-                      <CreateWatchPartyDialog>
-                        <Button
-                          variant="ghost"
-                          className="w-full justify-start text-xs text-gray-300 hover:text-neon-green hover:bg-neon-green/10"
-                        >
-                          <Play className="h-3 w-3 mr-2" />
-                          Start Party
-                        </Button>
-                      </CreateWatchPartyDialog>
-                      <Button
-                        variant="ghost"
-                        className="w-full justify-start text-xs text-gray-300 hover:text-neon-green hover:bg-neon-green/10"
-                        onClick={() => navigate("/explore-watchparties")}
-                      >
-                        <Search className="h-3 w-3 mr-2" />
-                        Explore Live
-                      </Button>
+                      <div className="px-3 py-2 text-xs text-gray-400">
+                        🎬 WatchParties feature is being improved and will be
+                        available soon!
+                      </div>
                     </div>
                   </div>
                 )}
