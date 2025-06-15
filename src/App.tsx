@@ -158,8 +158,10 @@ function App() {
   return (
     <ErrorBoundary>
       <AuthProvider>
-        <AppRoutes />
-        <Toaster />
+        <div>
+          <AppRoutes />
+          <Toaster />
+        </div>
       </AuthProvider>
     </ErrorBoundary>
   );

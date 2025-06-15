@@ -69,7 +69,8 @@ const DEVICE_DEMOS = {
 };
 
 export default function LandingPage() {
-  const { user, signOut } = useAuth();
+  const auth = useAuth();
+  const { user, signOut } = auth || { user: null, signOut: () => {} };
   const navigate = useNavigate();
   const [scrollY, setScrollY] = useState(0);
   const [isVisible, setIsVisible] = useState({});
