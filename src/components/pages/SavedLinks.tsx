@@ -57,7 +57,7 @@ const SavedLinks = () => {
       setLoading(true);
 
       // Get saved links with full link data
-      const { data: savedLinksData, error } = await supabase
+      const { data: savedLinksData, error } = (await supabase
         .from("saved_links")
         .select(
           `
@@ -76,7 +76,10 @@ const SavedLinks = () => {
         `,
         )
         .eq("user_id", user.id)
-        .order("created_at", { ascending: false });
+        .order("created_at", { ascending: false })) as {
+        data: any[] | null;
+        error: any;
+      };
 
       if (error) throw error;
 
@@ -87,21 +90,21 @@ const SavedLinks = () => {
 
       // Get user and ring data for the links
       const validLinks = savedLinksData
-        .map((sl) => sl.shared_links)
-        .filter((link): link is NonNullable<typeof link> => Boolean(link));
+        .map((sl: any) => sl.shared_links)
+        .filter((link: any): link is NonNullable<typeof link> => Boolean(link));
 
       const userIds = [
         ...new Set(
           validLinks
-            .map((link) => link.user_id)
-            .filter((id): id is string => Boolean(id)),
+            .map((link: any) => link.user_id)
+            .filter((id: any): id is string => Boolean(id)),
         ),
       ];
       const ringIds = [
         ...new Set(
           validLinks
-            .map((link) => link.ring_id)
-            .filter((id): id is string => Boolean(id)),
+            .map((link: any) => link.ring_id)
+            .filter((id: any): id is string => Boolean(id)),
         ),
       ];
 
@@ -127,8 +130,8 @@ const SavedLinks = () => {
 
       // Process the saved links with user and ring data
       const processedLinks: SavedLink[] = savedLinksData
-        .filter((savedLink) => savedLink.shared_links)
-        .map((savedLink) => {
+        .filter((savedLink: any) => savedLink.shared_links)
+        .map((savedLink: any) => {
           const link = savedLink.shared_links;
           if (!link) return null;
 
@@ -162,7 +165,7 @@ const SavedLinks = () => {
             },
           };
         })
-        .filter((item): item is SavedLink =>
+        .filter((item: any): item is SavedLink =>
           Boolean(item && item.shared_links),
         );
 
