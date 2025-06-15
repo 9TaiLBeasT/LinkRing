@@ -20,46 +20,31 @@ import { useToast } from "@/components/ui/use-toast";
 import { useNavigate } from "react-router-dom";
 import { Database } from "@/types/supabase";
 
-type SavedLinkResponse = {
+interface SavedLinkData {
   id: string;
-  link_id: string | null;
-  created_at: string | null;
+  link_id: string;
+  created_at: string;
   shared_links: {
     id: string;
     title: string;
     url: string;
     description: string | null;
-    created_at: string | null;
-    user_id: string | null;
-    ring_id: string | null;
-  } | null;
-};
-
-type SavedLink = {
-  id: string;
-  link_id: string | null;
-  created_at: string | null;
-  shared_links: {
-    id: string;
-    title: string;
-    url: string;
-    description?: string | null;
     created_at: string;
     user_id: string;
-    ring_id?: string | null;
+    ring_id: string | null;
     user?: {
-      full_name?: string | null;
-      email?: string | null;
-      avatar_url?: string | null;
+      full_name?: string;
+      email?: string;
+      avatar_url?: string;
     };
     ring?: {
       name: string;
     };
   } | null;
-};
+}
 
 const SavedLinks = () => {
-  const [savedLinks, setSavedLinks] = useState<SavedLink[]>([]);
+  const [savedLinks, setSavedLinks] = useState<SavedLinkData[]>([]);
   const [loading, setLoading] = useState(true);
   const { user } = useAuth();
   const { toast } = useToast();
@@ -93,34 +78,30 @@ const SavedLinks = () => {
         .eq("user_id", user.id)
         .order("created_at", { ascending: false });
 
-      const typedSavedLinksData = savedLinksData as unknown as
-        | SavedLinkResponse[]
-        | null;
-
       if (error) throw error;
 
-      if (!typedSavedLinksData || typedSavedLinksData.length === 0) {
+      if (!savedLinksData || savedLinksData.length === 0) {
         setSavedLinks([]);
         return;
       }
 
       // Get user and ring data for the links
-      const validLinks = typedSavedLinksData
-        .map((sl) => sl.shared_links)
-        .filter((link): link is NonNullable<typeof link> => Boolean(link));
+      const validLinks = savedLinksData
+        .map((sl: any) => sl.shared_links)
+        .filter((link: any) => link && link.id);
 
       const userIds = [
         ...new Set(
           validLinks
-            .map((link) => link.user_id)
-            .filter((id): id is string => Boolean(id)),
+            .map((link: any) => link.user_id)
+            .filter((id: string) => Boolean(id)),
         ),
       ];
       const ringIds = [
         ...new Set(
           validLinks
-            .map((link) => link.ring_id)
-            .filter((id): id is string => Boolean(id)),
+            .map((link: any) => link.ring_id)
+            .filter((id: string) => Boolean(id)),
         ),
       ];
 
@@ -145,9 +126,9 @@ const SavedLinks = () => {
       );
 
       // Process the saved links with user and ring data
-      const processedLinks: SavedLink[] = typedSavedLinksData
-        .filter((savedLink) => savedLink.shared_links)
-        .map((savedLink) => {
+      const processedLinks: SavedLinkData[] = savedLinksData
+        .filter((savedLink: any) => savedLink.shared_links)
+        .map((savedLink: any) => {
           const link = savedLink.shared_links;
           if (!link) return null;
 
@@ -155,22 +136,22 @@ const SavedLinks = () => {
           const ringData = link.ring_id ? ringsMap.get(link.ring_id) : null;
 
           return {
-            id: savedLink.id,
-            link_id: savedLink.link_id,
-            created_at: savedLink.created_at,
+            id: savedLink.id || "",
+            link_id: savedLink.link_id || "",
+            created_at: savedLink.created_at || new Date().toISOString(),
             shared_links: {
-              id: link.id,
+              id: link.id || "",
               title: link.title || "",
               url: link.url || "",
-              description: link.description || null,
+              description: link.description,
               created_at: link.created_at || new Date().toISOString(),
               user_id: link.user_id || "",
-              ring_id: link.ring_id || null,
+              ring_id: link.ring_id,
               user: userData
                 ? {
-                    full_name: userData.full_name || null,
-                    email: userData.email || null,
-                    avatar_url: userData.avatar_url || null,
+                    full_name: userData.full_name,
+                    email: userData.email,
+                    avatar_url: userData.avatar_url,
                   }
                 : undefined,
               ring: ringData
@@ -179,11 +160,9 @@ const SavedLinks = () => {
                   }
                 : undefined,
             },
-          } as SavedLink;
+          };
         })
-        .filter((item): item is SavedLink => {
-          return Boolean(item && item.shared_links);
-        });
+        .filter((item: any) => Boolean(item && item.shared_links));
 
       setSavedLinks(processedLinks);
     } catch (error: any) {
@@ -226,7 +205,7 @@ const SavedLinks = () => {
     fetchSavedLinks();
   }, [fetchSavedLinks]);
 
-  const LinkCard = ({ savedLink }: { savedLink: SavedLink }) => {
+  const LinkCard = ({ savedLink }: { savedLink: SavedLinkData }) => {
     const link = savedLink.shared_links;
     if (!link) return null;
 
@@ -324,7 +303,10 @@ const SavedLinks = () => {
                 </AvatarFallback>
               </Avatar>
               <span className="text-xs text-gray-400">
-                Saved {new Date(savedLink.created_at).toLocaleDateString()}
+                Saved{" "}
+                {new Date(
+                  savedLink.created_at || new Date(),
+                ).toLocaleDateString()}
               </span>
             </div>
           </div>
