@@ -20,6 +20,21 @@ import { useToast } from "@/components/ui/use-toast";
 import { useNavigate } from "react-router-dom";
 import { Database } from "@/types/supabase";
 
+type SavedLinkResponse = {
+  id: string;
+  link_id: string;
+  created_at: string;
+  shared_links: {
+    id: string;
+    title: string;
+    url: string;
+    description: string | null;
+    created_at: string;
+    user_id: string;
+    ring_id: string | null;
+  } | null;
+};
+
 type SavedLink = {
   id: string;
   link_id: string;
@@ -57,7 +72,7 @@ const SavedLinks = () => {
       setLoading(true);
 
       // Get saved links with full link data
-      const { data: savedLinksData, error } = (await supabase
+      const { data: savedLinksData, error } = await supabase
         .from("saved_links")
         .select(
           `
@@ -76,35 +91,34 @@ const SavedLinks = () => {
         `,
         )
         .eq("user_id", user.id)
-        .order("created_at", { ascending: false })) as {
-        data: any[] | null;
-        error: any;
-      };
+        .order("created_at", { ascending: false });
+
+      const typedSavedLinksData = savedLinksData as SavedLinkResponse[] | null;
 
       if (error) throw error;
 
-      if (!savedLinksData || savedLinksData.length === 0) {
+      if (!typedSavedLinksData || typedSavedLinksData.length === 0) {
         setSavedLinks([]);
         return;
       }
 
       // Get user and ring data for the links
-      const validLinks = savedLinksData
-        .map((sl: any) => sl.shared_links)
-        .filter((link: any): link is NonNullable<typeof link> => Boolean(link));
+      const validLinks = typedSavedLinksData
+        .map((sl) => sl.shared_links)
+        .filter((link): link is NonNullable<typeof link> => Boolean(link));
 
       const userIds = [
         ...new Set(
           validLinks
-            .map((link: any) => link.user_id)
-            .filter((id: any): id is string => Boolean(id)),
+            .map((link) => link.user_id)
+            .filter((id): id is string => Boolean(id)),
         ),
       ];
       const ringIds = [
         ...new Set(
           validLinks
-            .map((link: any) => link.ring_id)
-            .filter((id: any): id is string => Boolean(id)),
+            .map((link) => link.ring_id)
+            .filter((id): id is string => Boolean(id)),
         ),
       ];
 
@@ -129,9 +143,9 @@ const SavedLinks = () => {
       );
 
       // Process the saved links with user and ring data
-      const processedLinks: SavedLink[] = savedLinksData
-        .filter((savedLink: any) => savedLink.shared_links)
-        .map((savedLink: any) => {
+      const processedLinks: SavedLink[] = typedSavedLinksData
+        .filter((savedLink) => savedLink.shared_links)
+        .map((savedLink) => {
           const link = savedLink.shared_links;
           if (!link) return null;
 
@@ -165,7 +179,7 @@ const SavedLinks = () => {
             },
           };
         })
-        .filter((item: any): item is SavedLink =>
+        .filter((item): item is SavedLink =>
           Boolean(item && item.shared_links),
         );
 
