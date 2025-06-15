@@ -88,12 +88,20 @@ const SavedLinks = () => {
       // Get user and ring data for the links
       const userIds = [
         ...new Set(
-          savedLinksData.map((sl) => sl.shared_links?.user_id).filter(Boolean),
+          savedLinksData
+            .map((sl) => sl.shared_links)
+            .filter(Boolean)
+            .map((link) => link.user_id)
+            .filter(Boolean),
         ),
       ];
       const ringIds = [
         ...new Set(
-          savedLinksData.map((sl) => sl.shared_links?.ring_id).filter(Boolean),
+          savedLinksData
+            .map((sl) => sl.shared_links)
+            .filter(Boolean)
+            .map((link) => link.ring_id)
+            .filter(Boolean),
         ),
       ];
 
@@ -118,43 +126,32 @@ const SavedLinks = () => {
       );
 
       // Process the saved links with user and ring data
-      const processedLinks: SavedLink[] = savedLinksData.map((savedLink) => {
-        const link = savedLink.shared_links;
-        if (!link) {
+      const processedLinks: SavedLink[] = savedLinksData
+        .filter((savedLink) => savedLink.shared_links)
+        .map((savedLink) => {
+          const link = savedLink.shared_links;
+          const userData = link.user_id ? usersMap.get(link.user_id) : null;
+          const ringData = link.ring_id ? ringsMap.get(link.ring_id) : null;
+
           return {
             ...savedLink,
             shared_links: {
-              id: "",
-              title: "",
-              url: "",
-              created_at: "",
-              user_id: "",
+              ...link,
+              user: userData
+                ? {
+                    full_name: userData.full_name,
+                    email: userData.email,
+                    avatar_url: userData.avatar_url,
+                  }
+                : undefined,
+              ring: ringData
+                ? {
+                    name: ringData.name,
+                  }
+                : undefined,
             },
-          } as SavedLink;
-        }
-
-        const userData = link.user_id ? usersMap.get(link.user_id) : null;
-        const ringData = link.ring_id ? ringsMap.get(link.ring_id) : null;
-
-        return {
-          ...savedLink,
-          shared_links: {
-            ...link,
-            user: userData
-              ? {
-                  full_name: userData.full_name,
-                  email: userData.email,
-                  avatar_url: userData.avatar_url,
-                }
-              : undefined,
-            ring: ringData
-              ? {
-                  name: ringData.name,
-                }
-              : undefined,
-          },
-        };
-      });
+          };
+        });
 
       setSavedLinks(processedLinks);
     } catch (error: any) {

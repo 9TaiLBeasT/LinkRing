@@ -359,7 +359,9 @@ const Explore = () => {
       // Fetch only public rings for trending section
       const { data: ringsData, error: ringsError } = await supabase
         .from("rings")
-        .select("id, name, description, created_by, is_public")
+        .select(
+          "id, name, description, created_by, is_public, created_at, invite_code, updated_at",
+        )
         .eq("is_public", true);
 
       if (ringsError) throw ringsError;
