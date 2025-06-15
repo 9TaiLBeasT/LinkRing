@@ -191,6 +191,7 @@ export type Database = {
           token_identifier: string
           updated_at: string | null
           user_id: string | null
+          username: string
         }
         Insert: {
           avatar_url?: string | null
@@ -203,6 +204,7 @@ export type Database = {
           token_identifier: string
           updated_at?: string | null
           user_id?: string | null
+          username: string
         }
         Update: {
           avatar_url?: string | null
@@ -215,6 +217,7 @@ export type Database = {
           token_identifier?: string
           updated_at?: string | null
           user_id?: string | null
+          username?: string
         }
         Relationships: []
       }

@@ -19,6 +19,19 @@ export type EmbedType =
   | "codepen"
   | "figma"
   | "canva"
+  | "instagram"
+  | "tiktok"
+  | "pdf"
+  | "docx"
+  | "xlsx"
+  | "pptx"
+  | "google_docs"
+  | "notion"
+  | "github"
+  | "dribbble"
+  | "behance"
+  | "vimeo"
+  | "twitch"
   | null;
 
 // Platform detection patterns
@@ -32,10 +45,32 @@ const PLATFORM_PATTERNS = {
   soundcloud: [/soundcloud\.com\/([\w-]+)\/([\w-]+)/],
   codepen: [/codepen\.io\/([\w-]+)\/pen\/([\w-]+)/],
   figma: [
-    /figma\.com\/file\/([\w-]+)\/([\w-]+)/,
-    /figma\.com\/proto\/([\w-]+)\/([\w-]+)/,
+    /figma\.com\/file\/([A-Za-z0-9]+)\/([^?]+)/,
+    /figma\.com\/proto\/([A-Za-z0-9]+)\/([^?]+)/,
+    /figma\.com\/design\/([A-Za-z0-9]+)\/([^?]+)/,
   ],
   canva: [/canva\.com\/design\/([\w-]+)/],
+  instagram: [
+    /instagram\.com\/p\/([\w-]+)/,
+    /instagram\.com\/reel\/([\w-]+)/,
+    /instagram\.com\/reels\/([\w-]+)/,
+  ],
+  tiktok: [/tiktok\.com\/@[\w.-]+\/video\/(\d+)/, /vm\.tiktok\.com\/([\w-]+)/],
+  pdf: [/\.(pdf)(\?.*)?$/i],
+  docx: [/\.(docx?|doc)(\?.*)?$/i],
+  xlsx: [/\.(xlsx?|xls)(\?.*)?$/i],
+  pptx: [/\.(pptx?|ppt)(\?.*)?$/i],
+  google_docs: [
+    /docs\.google\.com\/document\/d\/([a-zA-Z0-9-_]+)/,
+    /docs\.google\.com\/spreadsheets\/d\/([a-zA-Z0-9-_]+)/,
+    /docs\.google\.com\/presentation\/d\/([a-zA-Z0-9-_]+)/,
+  ],
+  notion: [/notion\.so\/([\w-]+)/],
+  github: [/github\.com\/([\w.-]+)\/([\w.-]+)/],
+  dribbble: [/dribbble\.com\/shots\/([\d]+)/],
+  behance: [/behance\.net\/gallery\/([\d]+)/],
+  vimeo: [/vimeo\.com\/(\d+)/],
+  twitch: [/twitch\.tv\/([\w]+)/],
 };
 
 /**
@@ -83,6 +118,29 @@ export function extractEmbedData(url: string): EmbedData | null {
         return extractFigmaData(url);
       case "canva":
         return extractCanvaData(url);
+      case "instagram":
+        return extractInstagramData(url);
+      case "tiktok":
+        return extractTikTokData(url);
+      case "pdf":
+      case "docx":
+      case "xlsx":
+      case "pptx":
+        return extractDocumentData(url, platform);
+      case "google_docs":
+        return extractGoogleDocsData(url);
+      case "notion":
+        return extractNotionData(url);
+      case "github":
+        return extractGitHubData(url);
+      case "dribbble":
+        return extractDribbbleData(url);
+      case "behance":
+        return extractBehanceData(url);
+      case "vimeo":
+        return extractVimeoData(url);
+      case "twitch":
+        return extractTwitchData(url);
       default:
         return null;
     }
@@ -196,10 +254,13 @@ function extractFigmaData(url: string): EmbedData | null {
   for (const pattern of patterns) {
     const match = url.match(pattern);
     if (match) {
-      const [, fileId] = match;
+      const [, fileId, fileName] = match;
       return {
         type: "figma",
         id: fileId,
+        title: fileName
+          ? decodeURIComponent(fileName.replace(/-/g, " "))
+          : "Figma Design",
         embedUrl: `https://www.figma.com/embed?embed_host=share&url=${encodeURIComponent(url)}`,
         originalUrl: url,
       };
@@ -277,6 +338,208 @@ export function isEmbeddable(url: string): boolean {
 }
 
 /**
+ * Extract Instagram data
+ */
+function extractInstagramData(url: string): EmbedData | null {
+  const patterns = PLATFORM_PATTERNS.instagram;
+
+  for (const pattern of patterns) {
+    const match = url.match(pattern);
+    if (match) {
+      const [, postId] = match;
+      return {
+        type: "instagram",
+        id: postId,
+        embedUrl: `https://www.instagram.com/p/${postId}/embed/`,
+        originalUrl: url,
+      };
+    }
+  }
+
+  return null;
+}
+
+/**
+ * Extract TikTok data
+ */
+function extractTikTokData(url: string): EmbedData | null {
+  const patterns = PLATFORM_PATTERNS.tiktok;
+
+  for (const pattern of patterns) {
+    const match = url.match(pattern);
+    if (match) {
+      const [, videoId] = match;
+      return {
+        type: "tiktok",
+        id: videoId,
+        embedUrl: `https://www.tiktok.com/embed/v2/${videoId}`,
+        originalUrl: url,
+      };
+    }
+  }
+
+  return null;
+}
+
+/**
+ * Extract Document data (PDF, Word, Excel, etc.)
+ */
+function extractDocumentData(url: string, type: string): EmbedData | null {
+  const fileName = url.split("/").pop()?.split("?")[0] || "Document";
+
+  return {
+    type,
+    id: fileName,
+    title: fileName,
+    embedUrl: `https://docs.google.com/viewer?url=${encodeURIComponent(url)}&embedded=true`,
+    originalUrl: url,
+  };
+}
+
+/**
+ * Extract Google Docs data
+ */
+function extractGoogleDocsData(url: string): EmbedData | null {
+  const match = url.match(PLATFORM_PATTERNS.google_docs[0]);
+  if (match) {
+    const [, docId] = match;
+    let embedUrl = "";
+    let title = "Google Document";
+
+    if (url.includes("/document/")) {
+      embedUrl = `https://docs.google.com/document/d/${docId}/preview`;
+      title = "Google Doc";
+    } else if (url.includes("/spreadsheets/")) {
+      embedUrl = `https://docs.google.com/spreadsheets/d/${docId}/preview`;
+      title = "Google Sheet";
+    } else if (url.includes("/presentation/")) {
+      embedUrl = `https://docs.google.com/presentation/d/${docId}/preview`;
+      title = "Google Slides";
+    }
+
+    return {
+      type: "google_docs",
+      id: docId,
+      title,
+      embedUrl,
+      originalUrl: url,
+    };
+  }
+
+  return null;
+}
+
+/**
+ * Extract Notion data
+ */
+function extractNotionData(url: string): EmbedData | null {
+  const match = url.match(PLATFORM_PATTERNS.notion[0]);
+  if (match) {
+    const [, pageId] = match;
+    return {
+      type: "notion",
+      id: pageId,
+      title: "Notion Page",
+      embedUrl: url,
+      originalUrl: url,
+    };
+  }
+
+  return null;
+}
+
+/**
+ * Extract GitHub data
+ */
+function extractGitHubData(url: string): EmbedData | null {
+  const match = url.match(PLATFORM_PATTERNS.github[0]);
+  if (match) {
+    const [, owner, repo] = match;
+    return {
+      type: "github",
+      id: `${owner}/${repo}`,
+      title: `${owner}/${repo}`,
+      embedUrl: `https://github.com/${owner}/${repo}`,
+      originalUrl: url,
+    };
+  }
+
+  return null;
+}
+
+/**
+ * Extract Dribbble data
+ */
+function extractDribbbleData(url: string): EmbedData | null {
+  const match = url.match(PLATFORM_PATTERNS.dribbble[0]);
+  if (match) {
+    const [, shotId] = match;
+    return {
+      type: "dribbble",
+      id: shotId,
+      embedUrl: `https://dribbble.com/shots/${shotId}/player`,
+      originalUrl: url,
+    };
+  }
+
+  return null;
+}
+
+/**
+ * Extract Behance data
+ */
+function extractBehanceData(url: string): EmbedData | null {
+  const match = url.match(PLATFORM_PATTERNS.behance[0]);
+  if (match) {
+    const [, projectId] = match;
+    return {
+      type: "behance",
+      id: projectId,
+      embedUrl: `https://www.behance.net/gallery/${projectId}`,
+      originalUrl: url,
+    };
+  }
+
+  return null;
+}
+
+/**
+ * Extract Vimeo data
+ */
+function extractVimeoData(url: string): EmbedData | null {
+  const match = url.match(PLATFORM_PATTERNS.vimeo[0]);
+  if (match) {
+    const [, videoId] = match;
+    return {
+      type: "vimeo",
+      id: videoId,
+      embedUrl: `https://player.vimeo.com/video/${videoId}`,
+      originalUrl: url,
+    };
+  }
+
+  return null;
+}
+
+/**
+ * Extract Twitch data
+ */
+function extractTwitchData(url: string): EmbedData | null {
+  const match = url.match(PLATFORM_PATTERNS.twitch[0]);
+  if (match) {
+    const [, channel] = match;
+    return {
+      type: "twitch",
+      id: channel,
+      embedUrl: `https://player.twitch.tv/?channel=${channel}&parent=${window.location.hostname}`,
+      originalUrl: url,
+    };
+  }
+
+  return null;
+}
+
+/**
  * Get platform display name
  */
 export function getPlatformDisplayName(type: EmbedType): string {
@@ -288,6 +551,19 @@ export function getPlatformDisplayName(type: EmbedType): string {
     codepen: "CodePen",
     figma: "Figma",
     canva: "Canva",
+    instagram: "Instagram",
+    tiktok: "TikTok",
+    pdf: "PDF",
+    docx: "Word Document",
+    xlsx: "Excel Spreadsheet",
+    pptx: "PowerPoint",
+    google_docs: "Google Docs",
+    notion: "Notion",
+    github: "GitHub",
+    dribbble: "Dribbble",
+    behance: "Behance",
+    vimeo: "Vimeo",
+    twitch: "Twitch",
   };
 
   return names[type || ""] || "Unknown";
@@ -305,6 +581,19 @@ export function getPlatformIcon(type: EmbedType): string {
     codepen: "💻",
     figma: "🎨",
     canva: "🖼️",
+    instagram: "📸",
+    tiktok: "🎬",
+    pdf: "📄",
+    docx: "📝",
+    xlsx: "📊",
+    pptx: "📋",
+    google_docs: "📄",
+    notion: "📝",
+    github: "💻",
+    dribbble: "🎨",
+    behance: "🎨",
+    vimeo: "🎥",
+    twitch: "🎮",
   };
 
   return icons[type || ""] || "🔗";

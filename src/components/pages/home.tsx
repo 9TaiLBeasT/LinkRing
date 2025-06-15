@@ -34,11 +34,47 @@ import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../../supabase/auth";
 import { useEffect, useState } from "react";
 
+// Device demo content
+const DEVICE_DEMOS = {
+  desktop: {
+    title: "Desktop Experience",
+    description: "Full-featured dashboard with advanced controls",
+    features: [
+      "Multi-ring management",
+      "Advanced analytics",
+      "Bulk operations",
+      "Keyboard shortcuts",
+    ],
+  },
+  tablet: {
+    title: "Tablet Experience",
+    description: "Touch-optimized interface for productivity",
+    features: [
+      "Touch gestures",
+      "Split-screen view",
+      "Drag & drop",
+      "Stylus support",
+    ],
+  },
+  mobile: {
+    title: "Mobile Experience",
+    description: "On-the-go access with native app feel",
+    features: [
+      "Push notifications",
+      "Offline sync",
+      "Quick actions",
+      "Biometric auth",
+    ],
+  },
+};
+
 export default function LandingPage() {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
   const [scrollY, setScrollY] = useState(0);
   const [isVisible, setIsVisible] = useState({});
+  const [activeDevice, setActiveDevice] = useState("desktop");
+  const [demoContent, setDemoContent] = useState(DEVICE_DEMOS.desktop);
 
   useEffect(() => {
     const handleScroll = () => setScrollY(window.scrollY);
@@ -66,6 +102,12 @@ export default function LandingPage() {
     return () => observer.disconnect();
   }, []);
 
+  // Handle device demo switching
+  const handleDeviceSwitch = (device: "desktop" | "tablet" | "mobile") => {
+    setActiveDevice(device);
+    setDemoContent(DEVICE_DEMOS[device]);
+  };
+
   return (
     <div className="min-h-screen bg-neon-dark text-white font-mono">
       {/* Cyberpunk Navigation */}
@@ -73,10 +115,14 @@ export default function LandingPage() {
         <div className="max-w-7xl mx-auto flex h-16 items-center justify-between px-6">
           <div className="flex items-center">
             <Link to="/" className="group relative">
-              <div className="stylish-logo text-3xl font-black tracking-wider text-transparent bg-gradient-to-r from-neon-green via-emerald-400 to-cyan-400 bg-clip-text hover:from-cyan-400 hover:via-neon-green hover:to-emerald-400 transition-all duration-500">
-                <span className="relative inline-block transform group-hover:scale-110 transition-transform duration-300">
-                  Link
-                  <span className="text-white font-light">Ring</span>
+              <div className="stylish-logo text-3xl font-black tracking-wider transition-all duration-500 group-hover:scale-110">
+                <span className="relative inline-block transform transition-transform duration-300">
+                  <span className="text-transparent bg-gradient-to-r from-neon-green via-emerald-400 to-cyan-400 bg-clip-text hover:from-cyan-400 hover:via-neon-green hover:to-emerald-400 transition-all duration-500 font-['RICH_THE_BARBER',_'GOLDROPS',_'Impact',_'Arial_Black',_sans-serif]">
+                    Link
+                  </span>
+                  <span className="text-neon-green font-light ml-1 font-['RICH_THE_BARBER',_'GOLDROPS',_'Impact',_'Arial_Black',_sans-serif]">
+                    Ring
+                  </span>
                   <div className="absolute -inset-1 bg-gradient-to-r from-neon-green/20 to-cyan-400/20 rounded-lg blur opacity-0 group-hover:opacity-100 transition-opacity duration-300 -z-10"></div>
                   <div className="absolute top-0 right-0 w-2 h-2 bg-neon-green rounded-full animate-pulse opacity-80"></div>
                 </span>
@@ -540,31 +586,147 @@ export default function LandingPage() {
                 <div className="absolute top-1/2 -right-8 w-4 h-4 bg-cyan-400/20 rounded-full animate-ping"></div>
               </div>
 
-              {/* Device Mockups */}
-              <div className="flex justify-center items-center gap-8 mt-12">
-                <div className="text-center group cursor-pointer">
-                  <div className="w-16 h-16 bg-neon-green/10 rounded-2xl flex items-center justify-center mb-3 group-hover:bg-neon-green/20 transition-colors">
-                    <Monitor className="h-8 w-8 text-neon-green" />
+              {/* Interactive Device Mockups */}
+              <div className="mt-12">
+                {/* Device Selector */}
+                <div className="flex justify-center items-center gap-8 mb-8">
+                  <div
+                    className={`text-center group cursor-pointer transition-all duration-300 ${
+                      activeDevice === "desktop"
+                        ? "scale-110"
+                        : "hover:scale-105"
+                    }`}
+                    onClick={() => handleDeviceSwitch("desktop")}
+                  >
+                    <div
+                      className={`w-16 h-16 rounded-2xl flex items-center justify-center mb-3 transition-all duration-300 ${
+                        activeDevice === "desktop"
+                          ? "bg-neon-green/30 shadow-neon border-2 border-neon-green animate-pulse-glow"
+                          : "bg-neon-green/10 hover:bg-neon-green/20 border-2 border-transparent hover:border-neon-green/50"
+                      }`}
+                    >
+                      <Monitor
+                        className={`h-8 w-8 transition-colors duration-300 ${
+                          activeDevice === "desktop"
+                            ? "text-neon-green animate-pulse"
+                            : "text-neon-green/70 group-hover:text-neon-green"
+                        }`}
+                      />
+                    </div>
+                    <span
+                      className={`text-sm transition-colors duration-300 font-mono ${
+                        activeDevice === "desktop"
+                          ? "text-neon-green font-bold"
+                          : "text-gray-400 group-hover:text-white"
+                      }`}
+                    >
+                      Desktop
+                    </span>
                   </div>
-                  <span className="text-gray-400 text-sm group-hover:text-white transition-colors">
-                    Desktop
-                  </span>
+
+                  <div
+                    className={`text-center group cursor-pointer transition-all duration-300 ${
+                      activeDevice === "tablet"
+                        ? "scale-110"
+                        : "hover:scale-105"
+                    }`}
+                    onClick={() => handleDeviceSwitch("tablet")}
+                  >
+                    <div
+                      className={`w-16 h-16 rounded-2xl flex items-center justify-center mb-3 transition-all duration-300 ${
+                        activeDevice === "tablet"
+                          ? "bg-purple-400/30 shadow-lg border-2 border-purple-400 animate-pulse-glow"
+                          : "bg-purple-400/10 hover:bg-purple-400/20 border-2 border-transparent hover:border-purple-400/50"
+                      }`}
+                    >
+                      <Tablet
+                        className={`h-8 w-8 transition-colors duration-300 ${
+                          activeDevice === "tablet"
+                            ? "text-purple-400 animate-pulse"
+                            : "text-purple-400/70 group-hover:text-purple-400"
+                        }`}
+                      />
+                    </div>
+                    <span
+                      className={`text-sm transition-colors duration-300 font-mono ${
+                        activeDevice === "tablet"
+                          ? "text-purple-400 font-bold"
+                          : "text-gray-400 group-hover:text-white"
+                      }`}
+                    >
+                      Tablet
+                    </span>
+                  </div>
+
+                  <div
+                    className={`text-center group cursor-pointer transition-all duration-300 ${
+                      activeDevice === "mobile"
+                        ? "scale-110"
+                        : "hover:scale-105"
+                    }`}
+                    onClick={() => handleDeviceSwitch("mobile")}
+                  >
+                    <div
+                      className={`w-16 h-16 rounded-2xl flex items-center justify-center mb-3 transition-all duration-300 ${
+                        activeDevice === "mobile"
+                          ? "bg-cyan-400/30 shadow-lg border-2 border-cyan-400 animate-pulse-glow"
+                          : "bg-cyan-400/10 hover:bg-cyan-400/20 border-2 border-transparent hover:border-cyan-400/50"
+                      }`}
+                    >
+                      <Smartphone
+                        className={`h-8 w-8 transition-colors duration-300 ${
+                          activeDevice === "mobile"
+                            ? "text-cyan-400 animate-pulse"
+                            : "text-cyan-400/70 group-hover:text-cyan-400"
+                        }`}
+                      />
+                    </div>
+                    <span
+                      className={`text-sm transition-colors duration-300 font-mono ${
+                        activeDevice === "mobile"
+                          ? "text-cyan-400 font-bold"
+                          : "text-gray-400 group-hover:text-white"
+                      }`}
+                    >
+                      Mobile
+                    </span>
+                  </div>
                 </div>
-                <div className="text-center group cursor-pointer">
-                  <div className="w-16 h-16 bg-purple-400/10 rounded-2xl flex items-center justify-center mb-3 group-hover:bg-purple-400/20 transition-colors">
-                    <Tablet className="h-8 w-8 text-purple-400" />
+
+                {/* Dynamic Content Display */}
+                <div className="bg-gradient-to-br from-neon-gray/30 to-neon-dark/50 rounded-2xl border border-neon-green/30 p-8 backdrop-blur-lg shadow-neon-lg animate-slide-in-bottom">
+                  <div className="text-center mb-6">
+                    <h3 className="text-2xl font-bold text-white mb-2 font-mono">
+                      {demoContent.title}
+                    </h3>
+                    <p className="text-gray-300 text-lg">
+                      {demoContent.description}
+                    </p>
                   </div>
-                  <span className="text-gray-400 text-sm group-hover:text-white transition-colors">
-                    Tablet
-                  </span>
-                </div>
-                <div className="text-center group cursor-pointer">
-                  <div className="w-16 h-16 bg-cyan-400/10 rounded-2xl flex items-center justify-center mb-3 group-hover:bg-cyan-400/20 transition-colors">
-                    <Smartphone className="h-8 w-8 text-cyan-400" />
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {demoContent.features.map((feature, index) => (
+                      <div
+                        key={index}
+                        className="flex items-center gap-3 p-4 bg-neon-dark/50 rounded-lg border border-neon-green/20 hover:border-neon-green/50 transition-all duration-300 group cursor-pointer animate-flicker-in"
+                        style={{ animationDelay: `${index * 150}ms` }}
+                      >
+                        <div className="w-3 h-3 bg-neon-green rounded-full animate-pulse group-hover:animate-bounce"></div>
+                        <span className="text-white font-medium group-hover:text-neon-green transition-colors font-mono">
+                          {feature}
+                        </span>
+                      </div>
+                    ))}
                   </div>
-                  <span className="text-gray-400 text-sm group-hover:text-white transition-colors">
-                    Mobile
-                  </span>
+
+                  <div className="mt-6 text-center">
+                    <Button className="neon-button px-8 py-3 font-bold rounded-full hover:scale-105 transition-all duration-300">
+                      Try{" "}
+                      {activeDevice.charAt(0).toUpperCase() +
+                        activeDevice.slice(1)}{" "}
+                      Demo
+                    </Button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -582,34 +744,168 @@ export default function LandingPage() {
             </p>
           </div>
           <div className="ticker-scroll flex space-x-8">
-            {[...Array(12)].map((_, i) => (
+            {[
+              {
+                name: "Sarah Chen",
+                username: "@sarahc_dev",
+                role: "Senior Developer at TechCorp",
+                avatar:
+                  "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=150&h=150&fit=crop&crop=face",
+                testimonial:
+                  "LinkRing revolutionized how our dev team shares resources. The ephemeral chat feature keeps our discussions focused and private. Game changer!",
+              },
+              {
+                name: "Marcus Rodriguez",
+                username: "@marcus_design",
+                role: "UX Designer at StartupXYZ",
+                avatar:
+                  "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face",
+                testimonial:
+                  "The rich embeds are incredible! Sharing Figma designs and getting instant feedback through the chat has streamlined our entire design process.",
+              },
+              {
+                name: "Dr. Emily Watson",
+                username: "@emily_research",
+                role: "Research Lead at BioTech Labs",
+                avatar:
+                  "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150&h=150&fit=crop&crop=face",
+                testimonial:
+                  "Perfect for academic collaboration. Private rings keep our research secure while the auto-delete chat ensures sensitive discussions stay confidential.",
+              },
+              {
+                name: "Alex Thompson",
+                username: "@alexthompson",
+                role: "Product Manager at InnovateCo",
+                avatar:
+                  "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face",
+                testimonial:
+                  "LinkRing bridges the gap between Slack and bookmarking tools. Our product team can share competitive research and discuss it in real-time.",
+              },
+              {
+                name: "Priya Patel",
+                username: "@priya_crypto",
+                role: "Blockchain Developer",
+                avatar:
+                  "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=150&h=150&fit=crop&crop=face",
+                testimonial:
+                  "Security-first approach impressed me immediately. Military-grade encryption for our DeFi research links, plus the UI feels like the future.",
+              },
+              {
+                name: "James Kim",
+                username: "@jameskim_ai",
+                role: "AI Researcher at DeepMind",
+                avatar:
+                  "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=150&h=150&fit=crop&crop=face",
+                testimonial:
+                  "The real-time sync across devices is flawless. I can start a research session on desktop and continue on mobile without missing a beat.",
+              },
+              {
+                name: "Lisa Zhang",
+                username: "@lisa_startup",
+                role: "Founder at TechVenture",
+                avatar:
+                  "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&h=150&fit=crop&crop=face",
+                testimonial:
+                  "LinkRing replaced 3 different tools for our startup. Investor updates, team resources, and client presentations all in secure, organized rings.",
+              },
+              {
+                name: "David Park",
+                username: "@davidpark_dev",
+                role: "Full Stack Engineer",
+                avatar:
+                  "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&h=150&fit=crop&crop=face",
+                testimonial:
+                  "The YouTube and Spotify embeds work perfectly for our team's learning resources. No more switching between tabs to preview content!",
+              },
+              {
+                name: "Rachel Green",
+                username: "@rachel_content",
+                role: "Content Strategist",
+                avatar:
+                  "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150&h=150&fit=crop&crop=face",
+                testimonial:
+                  "Public rings feature is brilliant for thought leadership. I share industry insights publicly while keeping client work in private rings.",
+              },
+              {
+                name: "Michael Brown",
+                username: "@mike_security",
+                role: "Cybersecurity Expert",
+                avatar:
+                  "https://images.unsplash.com/photo-1560250097-0b93528c311a?w=150&h=150&fit=crop&crop=face",
+                testimonial:
+                  "Finally, a link-sharing platform that takes security seriously. End-to-end encryption and ephemeral chat give me peace of mind.",
+              },
+              {
+                name: "Anna Kowalski",
+                username: "@anna_data",
+                role: "Data Scientist at Analytics Pro",
+                avatar:
+                  "https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?w=150&h=150&fit=crop&crop=face",
+                testimonial:
+                  "The analytics on link engagement help me understand what resources my team actually uses. Data-driven knowledge sharing at its finest.",
+              },
+              {
+                name: "Carlos Mendez",
+                username: "@carlos_mobile",
+                role: "Mobile App Developer",
+                avatar:
+                  "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=150&h=150&fit=crop&crop=face",
+                testimonial:
+                  "Mobile experience is top-notch. Push notifications for new links and offline sync make it perfect for developers always on the go.",
+              },
+            ].map((testimonial, i) => (
               <div
                 key={i}
-                className="flex-shrink-0 bg-gradient-to-br from-neon-gray/30 to-neon-dark/50 p-6 rounded-2xl border border-neon-green/20 min-w-[350px] backdrop-blur-sm hover:border-neon-green/50 transition-all duration-300"
+                className="flex-shrink-0 bg-gradient-to-br from-neon-gray/30 to-neon-dark/50 p-6 rounded-2xl border border-neon-green/20 min-w-[380px] backdrop-blur-sm hover:border-neon-green/50 transition-all duration-300 hover:scale-105"
               >
                 <div className="flex items-center space-x-4 mb-4">
-                  <div className="w-12 h-12 bg-gradient-to-br from-neon-green/20 to-emerald-400/20 rounded-full flex items-center justify-center">
-                    <User className="h-6 w-6 text-neon-green" />
+                  <div className="relative">
+                    <img
+                      src={testimonial.avatar}
+                      alt={testimonial.name}
+                      className="w-12 h-12 rounded-full border-2 border-neon-green/40 hover:border-neon-green transition-all duration-300"
+                      onError={(e) => {
+                        e.currentTarget.src = `https://api.dicebear.com/7.x/avataaars/svg?seed=${testimonial.username}`;
+                      }}
+                    />
+                    <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-neon-green rounded-full border-2 border-neon-dark flex items-center justify-center">
+                      <div className="w-2 h-2 bg-neon-dark rounded-full animate-pulse"></div>
+                    </div>
                   </div>
-                  <div>
-                    <div className="text-white font-bold">CyberUser{i + 1}</div>
-                    <div className="text-neon-green/70 text-sm font-mono">
-                      Ring Pioneer
+                  <div className="flex-1">
+                    <div className="text-white font-bold text-sm">
+                      {testimonial.name}
+                    </div>
+                    <div className="text-neon-green/70 text-xs font-mono">
+                      {testimonial.username}
+                    </div>
+                    <div className="text-gray-400 text-xs">
+                      {testimonial.role}
                     </div>
                   </div>
                   <div className="flex ml-auto">
                     {[...Array(5)].map((_, j) => (
                       <Star
                         key={j}
-                        className="h-4 w-4 text-neon-green fill-current"
+                        className="h-3 w-3 text-neon-green fill-current"
                       />
                     ))}
                   </div>
                 </div>
-                <p className="text-gray-300 leading-relaxed">
-                  "LinkRing transformed our team collaboration. The ephemeral
-                  chat and rich embeds make sharing so much more engaging!"
+                <p className="text-gray-300 leading-relaxed text-sm">
+                  "{testimonial.testimonial}"
                 </p>
+                <div className="mt-4 flex items-center justify-between">
+                  <div className="flex items-center space-x-2">
+                    <div className="w-2 h-2 bg-neon-green/60 rounded-full animate-pulse"></div>
+                    <span className="text-xs text-neon-green/60 font-mono">
+                      Verified User
+                    </span>
+                  </div>
+                  <div className="text-xs text-gray-500 font-mono">
+                    {Math.floor(Math.random() * 30) + 1}d ago
+                  </div>
+                </div>
               </div>
             ))}
           </div>
@@ -943,8 +1239,11 @@ export default function LandingPage() {
         <div className="max-w-7xl mx-auto px-6">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-12">
             <div>
-              <h3 className="font-bold text-xl text-neon-green mb-4">
-                LinkRing
+              <h3 className="font-bold text-xl text-neon-green mb-4 font-['Orbitron',_'Impact',_'Arial_Black',_sans-serif] tracking-wider">
+                <span className="text-transparent bg-gradient-to-r from-neon-green to-emerald-400 bg-clip-text">
+                  Link
+                </span>
+                <span className="text-neon-green ml-1">Ring</span>
               </h3>
               <p className="text-gray-400 text-sm leading-relaxed">
                 The future of private link sharing. Secure, stylish, and built

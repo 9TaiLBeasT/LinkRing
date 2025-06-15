@@ -581,6 +581,28 @@ const Settings = () => {
                         </div>
                         <div>
                           <label className="block text-sm text-neon-green mb-2">
+                            Username
+                          </label>
+                          <Input
+                            className="neon-input"
+                            value={profile?.username || ""}
+                            onChange={(e) => {
+                              const value = e.target.value
+                                .toLowerCase()
+                                .replace(/[^a-z0-9_]/g, "");
+                              updateProfile({ username: value });
+                            }}
+                            placeholder="Enter your username"
+                            minLength={3}
+                            maxLength={50}
+                          />
+                          <p className="text-xs text-neon-green/60 mt-1">
+                            Username must be 3-50 characters, lowercase letters,
+                            numbers, and underscores only
+                          </p>
+                        </div>
+                        <div>
+                          <label className="block text-sm text-neon-green mb-2">
                             Email
                           </label>
                           <Input

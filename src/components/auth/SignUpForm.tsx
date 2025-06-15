@@ -6,17 +6,24 @@ import { Label } from "@/components/ui/label";
 import { useNavigate, Link } from "react-router-dom";
 import AuthLayout from "./AuthLayout";
 import { useToast } from "@/components/ui/use-toast";
+import { supabase } from "../../../supabase/supabase";
 
 export default function SignUpForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
+  const [username, setUsername] = useState("");
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [usernameAvailable, setUsernameAvailable] = useState<boolean | null>(
+    null,
+  );
+  const [checkingUsername, setCheckingUsername] = useState(false);
   const { signUp } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
   const fullNameRef = useRef<HTMLInputElement>(null);
+  const usernameRef = useRef<HTMLInputElement>(null);
   const emailRef = useRef<HTMLInputElement>(null);
   const passwordRef = useRef<HTMLInputElement>(null);
 
@@ -26,15 +33,15 @@ export default function SignUpForm() {
     setIsLoading(true);
 
     try {
-      await signUp(email, password, fullName);
+      await signUp(email, password, fullName, username);
       toast({
         title: "Account created successfully",
         description: "Please check your email to verify your account.",
         duration: 5000,
       });
       navigate("/login");
-    } catch (error) {
-      setError("Error creating account");
+    } catch (error: any) {
+      setError(error.message || "Error creating account");
     } finally {
       setIsLoading(false);
     }
@@ -55,8 +62,50 @@ export default function SignUpForm() {
     setError(""); // Clear error when user starts typing
   };
 
+  const checkUsernameAvailability = async (usernameToCheck: string) => {
+    if (usernameToCheck.length < 3) {
+      setUsernameAvailable(null);
+      return;
+    }
+
+    setCheckingUsername(true);
+    try {
+      const { data } = await supabase
+        .from("users")
+        .select("username")
+        .eq("username", usernameToCheck.toLowerCase())
+        .single();
+
+      setUsernameAvailable(!data);
+    } catch (error) {
+      // If no user found, username is available
+      setUsernameAvailable(true);
+    } finally {
+      setCheckingUsername(false);
+    }
+  };
+
+  const handleUsernameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, "");
+    setUsername(value);
+    setError("");
+
+    // Debounce username check
+    const timeoutId = setTimeout(() => {
+      if (value.length >= 3) {
+        checkUsernameAvailability(value);
+      }
+    }, 500);
+
+    return () => clearTimeout(timeoutId);
+  };
+
   const handleFullNameClick = () => {
     fullNameRef.current?.focus();
+  };
+
+  const handleUsernameClick = () => {
+    usernameRef.current?.focus();
   };
 
   const handleEmailClick = () => {
@@ -112,6 +161,63 @@ export default function SignUpForm() {
                 style={{ pointerEvents: "auto" }}
               />
             </div>
+          </div>
+          <div className="space-y-2">
+            <Label
+              htmlFor="username"
+              className="text-sm font-medium text-neon-green/80 cursor-pointer"
+              onClick={handleUsernameClick}
+            >
+              Username
+            </Label>
+            <div className="relative" onClick={handleUsernameClick}>
+              <Input
+                ref={usernameRef}
+                id="username"
+                type="text"
+                placeholder="johndoe"
+                value={username}
+                onChange={handleUsernameChange}
+                required
+                disabled={isLoading}
+                className="neon-input h-12 rounded-lg placeholder:text-gray-500 cursor-text focus:cursor-text"
+                autoComplete="username"
+                style={{ pointerEvents: "auto" }}
+                minLength={3}
+                maxLength={50}
+              />
+              {checkingUsername && (
+                <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                  <div className="w-4 h-4 border-2 border-neon-green/30 border-t-neon-green rounded-full animate-spin"></div>
+                </div>
+              )}
+              {!checkingUsername &&
+                usernameAvailable !== null &&
+                username.length >= 3 && (
+                  <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                    {usernameAvailable ? (
+                      <div className="w-4 h-4 bg-neon-green rounded-full flex items-center justify-center">
+                        <span className="text-black text-xs font-bold">✓</span>
+                      </div>
+                    ) : (
+                      <div className="w-4 h-4 bg-red-500 rounded-full flex items-center justify-center">
+                        <span className="text-white text-xs font-bold">✗</span>
+                      </div>
+                    )}
+                  </div>
+                )}
+            </div>
+            <p className="text-xs text-neon-green/60 mt-1">
+              Username must be 3-50 characters, lowercase letters, numbers, and
+              underscores only
+            </p>
+            {!checkingUsername &&
+              usernameAvailable === false &&
+              username.length >= 3 && (
+                <p className="text-xs text-red-400 mt-1">
+                  Username is already taken
+                </p>
+              )}
           </div>
           <div className="space-y-2">
             <Label
@@ -178,7 +284,11 @@ export default function SignUpForm() {
               !email.trim() ||
               !password.trim() ||
               !fullName.trim() ||
-              password.length < 8
+              !username.trim() ||
+              username.length < 3 ||
+              password.length < 8 ||
+              usernameAvailable === false ||
+              checkingUsername
             }
             className="neon-button ripple-effect w-full h-12 rounded-full font-bold text-sm disabled:opacity-50 disabled:cursor-not-allowed"
           >

@@ -304,13 +304,16 @@ const LinkCard = ({ link, className }: LinkCardProps) => {
 
           <div className="flex items-center gap-2 md:gap-3 w-full sm:w-auto justify-between sm:justify-end">
             {/* Chat Icon */}
-            <ChatIcon
-              messageCount={messages.length}
-              timeRemaining={timeRemainingFormatted}
-              isExpired={isChatExpired}
-              isActive={isChatOpen}
-              onClick={() => setIsChatOpen(true)}
-            />
+            <div className="flex-shrink-0">
+              <ChatIcon
+                messageCount={messages.length}
+                timeRemaining={timeRemainingFormatted}
+                isExpired={isChatExpired}
+                isActive={isChatOpen}
+                onClick={() => setIsChatOpen(true)}
+                className="relative z-10"
+              />
+            </div>
 
             {/* Comment/Description Button */}
             {link.description && (

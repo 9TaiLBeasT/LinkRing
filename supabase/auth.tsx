@@ -6,7 +6,12 @@ type AuthContextType = {
   user: User | null;
   loading: boolean;
   signIn: (email: string, password: string) => Promise<void>;
-  signUp: (email: string, password: string, fullName: string) => Promise<void>;
+  signUp: (
+    email: string,
+    password: string,
+    fullName: string,
+    username: string,
+  ) => Promise<void>;
   signOut: () => Promise<void>;
 };
 
@@ -34,17 +39,51 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return () => subscription.unsubscribe();
   }, []);
 
-  const signUp = async (email: string, password: string, fullName: string) => {
-    const { error } = await supabase.auth.signUp({
+  const signUp = async (
+    email: string,
+    password: string,
+    fullName: string,
+    username: string,
+  ) => {
+    // First check if username is available
+    const { data: existingUser } = await supabase
+      .from("users")
+      .select("username")
+      .eq("username", username.toLowerCase())
+      .single();
+
+    if (existingUser) {
+      throw new Error("Username is already taken");
+    }
+
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
         data: {
           full_name: fullName,
+          username: username.toLowerCase(),
         },
       },
     });
+
     if (error) throw error;
+
+    // Create user profile with username
+    if (data.user) {
+      const { error: profileError } = await supabase.from("users").insert({
+        id: data.user.id,
+        user_id: data.user.id,
+        email: data.user.email,
+        full_name: fullName,
+        username: username.toLowerCase(),
+        token_identifier: data.user.id,
+      });
+
+      if (profileError) {
+        console.error("Error creating user profile:", profileError);
+      }
+    }
   };
 
   const signIn = async (email: string, password: string) => {

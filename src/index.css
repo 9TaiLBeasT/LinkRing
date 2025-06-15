@@ -1,3 +1,5 @@
+@import url("https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap");
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -652,19 +654,26 @@
   transform: translateZ(5px) translateX(5px);
 }
 
-/* Stylish Logo */
+/* Stylish Logo with Custom Fonts */
 .stylish-logo {
-  font-family:
-    "Inter",
-    "SF Pro Display",
-    -apple-system,
-    BlinkMacSystemFont,
-    sans-serif;
+  font-family: "Orbitron", "Impact", "Arial Black", "Helvetica", sans-serif;
   font-weight: 900;
-  letter-spacing: -0.02em;
-  text-shadow: 0 0 30px rgba(0, 255, 157, 0.3);
+  letter-spacing: 0.05em;
+  text-shadow:
+    0 0 10px rgba(0, 255, 157, 0.5),
+    0 0 20px rgba(0, 255, 157, 0.3),
+    0 0 30px rgba(0, 255, 157, 0.2);
   background-size: 200% 200%;
   animation: gradient-text 3s ease infinite;
+  text-transform: uppercase;
+}
+
+/* Enhanced logo glow effect */
+.stylish-logo:hover {
+  text-shadow:
+    0 0 15px rgba(0, 255, 157, 0.8),
+    0 0 25px rgba(0, 255, 157, 0.5),
+    0 0 35px rgba(0, 255, 157, 0.3);
 }
 
 /* Feature Cards */
@@ -750,6 +759,41 @@
 .hover-lift:hover {
   transform: translateY(-8px) scale(1.02);
   box-shadow: 0 20px 40px rgba(0, 255, 157, 0.2);
+}
+
+/* Device demo animations */
+.device-demo-enter {
+  animation: deviceDemoEnter 0.5s ease-out;
+}
+
+@keyframes deviceDemoEnter {
+  0% {
+    opacity: 0;
+    transform: translateY(20px) scale(0.95);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Enhanced pulse glow for active devices */
+.animate-pulse-glow {
+  animation: pulseGlowEnhanced 2s ease-in-out infinite;
+}
+
+@keyframes pulseGlowEnhanced {
+  0%,
+  100% {
+    opacity: 1;
+    box-shadow: 0 0 20px rgba(0, 255, 157, 0.4);
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.9;
+    box-shadow: 0 0 30px rgba(0, 255, 157, 0.6);
+    transform: scale(1.02);
+  }
 }
 
 /* Improved mobile responsiveness */
