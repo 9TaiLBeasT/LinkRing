@@ -37,8 +37,8 @@ type SavedLinkResponse = {
 
 type SavedLink = {
   id: string;
-  link_id: string;
-  created_at: string;
+  link_id: string | null;
+  created_at: string | null;
   shared_links: {
     id: string;
     title: string;
@@ -93,7 +93,9 @@ const SavedLinks = () => {
         .eq("user_id", user.id)
         .order("created_at", { ascending: false });
 
-      const typedSavedLinksData = savedLinksData as SavedLinkResponse[] | null;
+      const typedSavedLinksData = savedLinksData as unknown as
+        | SavedLinkResponse[]
+        | null;
 
       if (error) throw error;
 
@@ -177,7 +179,7 @@ const SavedLinks = () => {
                   }
                 : undefined,
             },
-          };
+          } as SavedLink;
         })
         .filter((item): item is SavedLink => {
           return Boolean(item && item.shared_links);
