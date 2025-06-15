@@ -12,9 +12,22 @@ if (process.env.TEMPO === "true") {
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  base: process.env.NODE_ENV === "development" ? "/" : process.env.VITE_BASE_PATH || "/",
+  base:
+    process.env.NODE_ENV === "development"
+      ? "/"
+      : process.env.VITE_BASE_PATH || "/",
   optimizeDeps: {
     entries: ["src/main.tsx", "src/tempobook/**/*"],
+    include: [
+      "react",
+      "react-dom",
+      "react-router-dom",
+      "@supabase/supabase-js",
+      "lucide-react",
+      "date-fns",
+      "clsx",
+      "tailwind-merge",
+    ],
   },
   plugins: [
     react({
@@ -31,5 +44,22 @@ export default defineConfig({
   server: {
     // @ts-ignore
     allowedHosts: true,
-  }
+  },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          vendor: ["react", "react-dom"],
+          router: ["react-router-dom"],
+          supabase: ["@supabase/supabase-js"],
+          ui: [
+            "lucide-react",
+            "@radix-ui/react-dialog",
+            "@radix-ui/react-toast",
+          ],
+        },
+      },
+    },
+    chunkSizeWarningLimit: 1000,
+  },
 });

@@ -19,10 +19,12 @@ import {
   Menu,
   X,
   Mail,
+  Play,
 } from "lucide-react";
 import { useRings } from "@/hooks/useRings";
 import CreateRingDialog from "../CreateRingDialog";
 import JoinRingDialog from "../JoinRingDialog";
+import CreateWatchPartyDialog from "@/components/watchparty/CreateWatchPartyDialog";
 
 interface NavItem {
   icon: React.ReactNode;
@@ -42,6 +44,7 @@ interface SidebarProps {
 const defaultNavItems: NavItem[] = [
   { icon: <LayoutDashboard size={20} />, label: "Dashboard", isActive: true },
   { icon: <Search size={20} />, label: "Explore" },
+  { icon: <Play size={20} />, label: "WatchParties" },
   { icon: <BarChart3 size={20} />, label: "Leaderboard" },
   { icon: <Mail size={20} />, label: "Weekly Digest" },
 ];
@@ -58,7 +61,7 @@ const Sidebar = ({
   isOpen = true,
   onToggle = () => {},
 }: SidebarProps) => {
-  const { rings, loading } = useRings();
+  const { rings, loading, error } = useRings();
   const navigate = useNavigate();
   const [isMobile, setIsMobile] = useState(false);
 
@@ -84,6 +87,8 @@ const Sidebar = ({
       navigate("/dashboard");
     } else if (label === "Explore") {
       navigate("/explore");
+    } else if (label === "WatchParties") {
+      navigate("/explore-watchparties");
     } else if (label === "Leaderboard") {
       navigate("/leaderboard");
     } else if (label === "Weekly Digest") {
@@ -192,6 +197,34 @@ const Sidebar = ({
                     </div>
                   </div>
                 )}
+
+                {/* WatchParty submenu */}
+                {item.label === "WatchParties" && (
+                  <div className="absolute left-full top-0 ml-2 w-48 bg-neon-gray/90 backdrop-blur-md border border-neon-green/20 rounded-xl p-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-50">
+                    <div className="space-y-1">
+                      <div className="px-3 py-2 text-xs text-neon-green/70 font-medium">
+                        Live Sessions
+                      </div>
+                      <CreateWatchPartyDialog>
+                        <Button
+                          variant="ghost"
+                          className="w-full justify-start text-xs text-gray-300 hover:text-neon-green hover:bg-neon-green/10"
+                        >
+                          <Play className="h-3 w-3 mr-2" />
+                          Start Party
+                        </Button>
+                      </CreateWatchPartyDialog>
+                      <Button
+                        variant="ghost"
+                        className="w-full justify-start text-xs text-gray-300 hover:text-neon-green hover:bg-neon-green/10"
+                        onClick={() => navigate("/explore-watchparties")}
+                      >
+                        <Search className="h-3 w-3 mr-2" />
+                        Explore Live
+                      </Button>
+                    </div>
+                  </div>
+                )}
               </div>
             ))}
           </div>
@@ -206,6 +239,10 @@ const Sidebar = ({
               {loading ? (
                 <div className="flex items-center justify-center py-4">
                   <div className="h-4 w-4 rounded-full border-2 border-neon-green/30 border-t-neon-green animate-spin" />
+                </div>
+              ) : error ? (
+                <div className="text-center py-4 text-red-400 text-sm">
+                  Failed to load rings
                 </div>
               ) : rings.length > 0 ? (
                 rings.slice(0, 5).map((ring, index) => {

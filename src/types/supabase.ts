@@ -221,6 +221,165 @@ export type Database = {
         }
         Relationships: []
       }
+      watch_parties: {
+        Row: {
+          category: string | null
+          created_at: string | null
+          current_time_position: number | null
+          description: string | null
+          embed_data: Json | null
+          embed_type: string | null
+          expires_at: string | null
+          id: string
+          invite_code: string | null
+          is_active: boolean | null
+          is_playing: boolean | null
+          is_public: boolean | null
+          owner_id: string
+          ring_id: string | null
+          title: string | null
+          video_url: string
+          viewer_count: number | null
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string | null
+          current_time_position?: number | null
+          description?: string | null
+          embed_data?: Json | null
+          embed_type?: string | null
+          expires_at?: string | null
+          id?: string
+          invite_code?: string | null
+          is_active?: boolean | null
+          is_playing?: boolean | null
+          is_public?: boolean | null
+          owner_id: string
+          ring_id?: string | null
+          title?: string | null
+          video_url: string
+          viewer_count?: number | null
+        }
+        Update: {
+          category?: string | null
+          created_at?: string | null
+          current_time_position?: number | null
+          description?: string | null
+          embed_data?: Json | null
+          embed_type?: string | null
+          expires_at?: string | null
+          id?: string
+          invite_code?: string | null
+          is_active?: boolean | null
+          is_playing?: boolean | null
+          is_public?: boolean | null
+          owner_id?: string
+          ring_id?: string | null
+          title?: string | null
+          video_url?: string
+          viewer_count?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fk_watch_parties_owner_id"
+            columns: ["owner_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_watch_parties_ring_id"
+            columns: ["ring_id"]
+            isOneToOne: false
+            referencedRelation: "rings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      watch_party_messages: {
+        Row: {
+          created_at: string | null
+          id: string
+          message: string
+          party_id: string
+          type: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          message: string
+          party_id: string
+          type?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          message?: string
+          party_id?: string
+          type?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fk_watch_party_messages_party_id"
+            columns: ["party_id"]
+            isOneToOne: false
+            referencedRelation: "watch_parties"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_watch_party_messages_user_id"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      watch_party_users: {
+        Row: {
+          id: string
+          is_active: boolean | null
+          joined_at: string | null
+          last_seen: string | null
+          party_id: string
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          is_active?: boolean | null
+          joined_at?: string | null
+          last_seen?: string | null
+          party_id: string
+          user_id: string
+        }
+        Update: {
+          id?: string
+          is_active?: boolean | null
+          joined_at?: string | null
+          last_seen?: string | null
+          party_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fk_watch_party_users_party_id"
+            columns: ["party_id"]
+            isOneToOne: false
+            referencedRelation: "watch_parties"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_watch_party_users_user_id"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -230,9 +389,21 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: number
       }
+      cleanup_expired_watch_parties: {
+        Args: Record<PropertyKey, never>
+        Returns: number
+      }
       generate_invite_code: {
         Args: Record<PropertyKey, never>
         Returns: string
+      }
+      generate_watch_party_invite_code: {
+        Args: Record<PropertyKey, never>
+        Returns: string
+      }
+      update_watch_party_viewer_count: {
+        Args: { party_uuid: string }
+        Returns: number
       }
     }
     Enums: {
