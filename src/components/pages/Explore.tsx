@@ -164,28 +164,6 @@ const Explore = () => {
     setSidebarOpen(!sidebarOpen);
   };
 
-  // Infinite scroll setup
-  useEffect(() => {
-    if (observerRef.current) observerRef.current.disconnect();
-
-    observerRef.current = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting && hasMore && !isLoadingMore) {
-          loadMoreLinks();
-        }
-      },
-      { threshold: 1.0 },
-    );
-
-    if (lastLinkRef.current) {
-      observerRef.current.observe(lastLinkRef.current);
-    }
-
-    return () => {
-      if (observerRef.current) observerRef.current.disconnect();
-    };
-  }, [hasMore, isLoadingMore, loadMoreLinks]);
-
   const fetchLinks = useCallback(
     async (pageNum = 1, reset = true) => {
       try {
@@ -376,6 +354,28 @@ const Explore = () => {
     setPage(nextPage);
     await fetchLinks(nextPage, false);
   }, [hasMore, isLoadingMore, page, fetchLinks]);
+
+  // Infinite scroll setup
+  useEffect(() => {
+    if (observerRef.current) observerRef.current.disconnect();
+
+    observerRef.current = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasMore && !isLoadingMore) {
+          loadMoreLinks();
+        }
+      },
+      { threshold: 1.0 },
+    );
+
+    if (lastLinkRef.current) {
+      observerRef.current.observe(lastLinkRef.current);
+    }
+
+    return () => {
+      if (observerRef.current) observerRef.current.disconnect();
+    };
+  }, [hasMore, isLoadingMore, loadMoreLinks]);
 
   const fetchTrendingRings = useCallback(async () => {
     try {
