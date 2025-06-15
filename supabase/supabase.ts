@@ -1,8 +1,26 @@
 import { createClient } from "@supabase/supabase-js";
 
-// Embedded environment variables for deployment
-const supabaseUrl = "https://gpjmttgqolnblfiiikra.supabase.co";
-const supabaseAnonKey =
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZuaXhzd3R4dnVxdHl0bmVxZ29zIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDE3MjUyNDMsImV4cCI6MjA1NzMwMTI0M30.-qsxItJdRegH2_wQogU7sntv_tXhi1S1tjK6fkmYHyk";
+// Get environment variables
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+// Validate environment variables
+if (!supabaseUrl) {
+  throw new Error("Missing VITE_SUPABASE_URL environment variable");
+}
+
+if (!supabaseAnonKey) {
+  throw new Error("Missing VITE_SUPABASE_ANON_KEY environment variable");
+}
+
+// Log configuration for debugging (without exposing sensitive data)
+console.log("Supabase URL:", supabaseUrl);
+console.log("Supabase Anon Key configured:", !!supabaseAnonKey);
+
+export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+  auth: {
+    autoRefreshToken: true,
+    persistSession: true,
+    detectSessionInUrl: true,
+  },
+});
