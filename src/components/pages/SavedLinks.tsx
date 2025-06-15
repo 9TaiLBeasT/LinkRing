@@ -18,7 +18,8 @@ import { supabase } from "../../../supabase/supabase";
 import { useAuth } from "../../../supabase/auth";
 import { useToast } from "@/components/ui/use-toast";
 import { useNavigate } from "react-router-dom";
-import { Database } from "@/types/supabase";
+import Sidebar, { SidebarToggle } from "../dashboard/layout/Sidebar";
+import { cn } from "@/lib/utils";
 
 interface SavedLinkData {
   id: string;
@@ -46,15 +47,39 @@ interface SavedLinkData {
 const SavedLinks = () => {
   const [savedLinks, setSavedLinks] = useState<SavedLinkData[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [isMobile, setIsMobile] = useState(false);
   const { user } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
+
+  const toggleSidebar = () => {
+    setSidebarOpen(!sidebarOpen);
+  };
+
+  useEffect(() => {
+    const checkMobile = () => {
+      const mobile = window.innerWidth < 768;
+      setIsMobile(mobile);
+      if (mobile) {
+        setSidebarOpen(false);
+      } else {
+        setSidebarOpen(true);
+      }
+    };
+
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
 
   const fetchSavedLinks = useCallback(async () => {
     if (!user) return;
 
     try {
       setLoading(true);
+      setError(null);
 
       // Get saved links with full link data
       const { data: savedLinksData, error } = await supabase
@@ -167,9 +192,11 @@ const SavedLinks = () => {
       setSavedLinks(processedLinks);
     } catch (error: any) {
       console.error("Error fetching saved links:", error);
+      const errorMessage = error.message || "Failed to load saved links";
+      setError(errorMessage);
       toast({
         title: "Error",
-        description: "Failed to load saved links",
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {
@@ -316,79 +343,116 @@ const SavedLinks = () => {
   };
 
   return (
-    <div className="min-h-screen bg-neon-dark text-white font-mono">
-      {/* Header */}
-      <div className="border-b border-neon-green/20 bg-neon-dark/95 backdrop-blur-md sticky top-0 z-40">
-        <div className="max-w-7xl mx-auto px-4 py-6">
-          <div className="flex items-center gap-4 mb-4">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => navigate(-1)}
-              className="text-neon-green hover:bg-neon-green/10"
+    <div className="min-h-screen bg-neon-dark">
+      <SidebarToggle isOpen={sidebarOpen} onToggle={toggleSidebar} />
+      <div className="flex h-screen">
+        <Sidebar
+          isOpen={sidebarOpen}
+          onToggle={toggleSidebar}
+          activeItem="Saved"
+        />
+        <main
+          className={cn(
+            "flex-1 overflow-auto transition-all duration-300 ease-in-out text-white font-mono",
+            isMobile ? "w-full" : "",
+          )}
+        >
+          {/* Header */}
+          <div className="border-b border-neon-green/20 bg-neon-dark/95 backdrop-blur-md sticky top-0 z-40">
+            <div
+              className={cn(
+                "max-w-7xl mx-auto px-4 py-6",
+                isMobile ? "pt-16" : "pt-6",
+              )}
             >
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Back
-            </Button>
-            <h1 className="text-3xl md:text-4xl font-bold text-neon-green glitch-text">
-              Saved Links
-            </h1>
+              <div className="flex items-center gap-4 mb-4">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => navigate(-1)}
+                  className="text-neon-green hover:bg-neon-green/10"
+                >
+                  <ArrowLeft className="h-4 w-4 mr-2" />
+                  Back
+                </Button>
+                <h1 className="text-3xl md:text-4xl font-bold text-neon-green glitch-text">
+                  Saved Links
+                </h1>
+              </div>
+              <p className="text-gray-400">
+                Your bookmarked links from across the LinkRing network
+              </p>
+            </div>
           </div>
-          <p className="text-gray-400">
-            Your bookmarked links from across the LinkRing network
-          </p>
-        </div>
-      </div>
 
-      <div className="max-w-7xl mx-auto px-4 py-8">
-        {loading ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {[...Array(6)].map((_, i) => (
-              <Card
-                key={i}
-                className="animate-pulse bg-gray-900/95 border border-neon-green/30"
-              >
-                <CardHeader>
-                  <div className="h-4 bg-neon-green/20 rounded w-3/4"></div>
-                  <div className="h-3 bg-gray-600 rounded w-1/2"></div>
-                </CardHeader>
-                <CardContent>
-                  <div className="h-3 bg-gray-600 rounded w-full mb-2"></div>
-                  <div className="h-3 bg-gray-600 rounded w-2/3"></div>
-                </CardContent>
-              </Card>
-            ))}
+          <div className="max-w-7xl mx-auto px-4 py-8">
+            {loading ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {[...Array(6)].map((_, i) => (
+                  <Card
+                    key={i}
+                    className="animate-pulse bg-gray-900/95 border border-neon-green/30"
+                  >
+                    <CardHeader>
+                      <div className="h-4 bg-neon-green/20 rounded w-3/4"></div>
+                      <div className="h-3 bg-gray-600 rounded w-1/2"></div>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="h-3 bg-gray-600 rounded w-full mb-2"></div>
+                      <div className="h-3 bg-gray-600 rounded w-2/3"></div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            ) : error ? (
+              <div className="text-center py-12">
+                <Globe className="h-12 w-12 text-red-400 mx-auto mb-4" />
+                <h3 className="text-lg font-medium text-red-300 mb-2">
+                  Error Loading Saved Links
+                </h3>
+                <p className="text-gray-400 mb-4">{error}</p>
+                <Button
+                  onClick={() => {
+                    setError(null);
+                    fetchSavedLinks();
+                  }}
+                  className="neon-button"
+                >
+                  Try Again
+                </Button>
+              </div>
+            ) : savedLinks.length === 0 ? (
+              <div className="text-center py-12">
+                <Bookmark className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                <h3 className="text-lg font-medium text-gray-300 mb-2">
+                  No saved links yet
+                </h3>
+                <p className="text-gray-400 mb-4">
+                  Start exploring and save links that interest you
+                </p>
+                <Button
+                  onClick={() => navigate("/explore")}
+                  className="neon-button"
+                >
+                  Explore Links
+                </Button>
+              </div>
+            ) : (
+              <div className="space-y-6">
+                <div className="flex items-center justify-between">
+                  <h2 className="text-xl font-bold text-neon-green">
+                    {savedLinks.length} Saved Links
+                  </h2>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {savedLinks.map((savedLink) => (
+                    <LinkCard key={savedLink.id} savedLink={savedLink} />
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
-        ) : savedLinks.length === 0 ? (
-          <div className="text-center py-12">
-            <Bookmark className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-gray-300 mb-2">
-              No saved links yet
-            </h3>
-            <p className="text-gray-400 mb-4">
-              Start exploring and save links that interest you
-            </p>
-            <Button
-              onClick={() => navigate("/explore")}
-              className="neon-button"
-            >
-              Explore Links
-            </Button>
-          </div>
-        ) : (
-          <div className="space-y-6">
-            <div className="flex items-center justify-between">
-              <h2 className="text-xl font-bold text-neon-green">
-                {savedLinks.length} Saved Links
-              </h2>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {savedLinks.map((savedLink) => (
-                <LinkCard key={savedLink.id} savedLink={savedLink} />
-              ))}
-            </div>
-          </div>
-        )}
+        </main>
       </div>
     </div>
   );
