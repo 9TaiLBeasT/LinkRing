@@ -22,15 +22,15 @@ import { Database } from "@/types/supabase";
 
 type SavedLinkResponse = {
   id: string;
-  link_id: string;
-  created_at: string;
+  link_id: string | null;
+  created_at: string | null;
   shared_links: {
     id: string;
     title: string;
     url: string;
     description: string | null;
-    created_at: string;
-    user_id: string;
+    created_at: string | null;
+    user_id: string | null;
     ring_id: string | null;
   } | null;
 };
@@ -179,9 +179,9 @@ const SavedLinks = () => {
             },
           };
         })
-        .filter((item): item is SavedLink =>
-          Boolean(item && item.shared_links),
-        );
+        .filter((item): item is SavedLink => {
+          return Boolean(item && item.shared_links);
+        });
 
       setSavedLinks(processedLinks);
     } catch (error: any) {
