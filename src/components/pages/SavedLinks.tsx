@@ -91,7 +91,7 @@ const SavedLinks = () => {
           savedLinksData
             .map((sl) => sl.shared_links)
             .filter(Boolean)
-            .map((link) => link.user_id)
+            .map((link) => link?.user_id)
             .filter(Boolean),
         ),
       ];
@@ -100,7 +100,7 @@ const SavedLinks = () => {
           savedLinksData
             .map((sl) => sl.shared_links)
             .filter(Boolean)
-            .map((link) => link.ring_id)
+            .map((link) => link?.ring_id)
             .filter(Boolean),
         ),
       ];
@@ -130,13 +130,23 @@ const SavedLinks = () => {
         .filter((savedLink) => savedLink.shared_links)
         .map((savedLink) => {
           const link = savedLink.shared_links;
+          if (!link) return null;
+
           const userData = link.user_id ? usersMap.get(link.user_id) : null;
           const ringData = link.ring_id ? ringsMap.get(link.ring_id) : null;
 
           return {
-            ...savedLink,
+            id: savedLink.id,
+            link_id: savedLink.link_id,
+            created_at: savedLink.created_at,
             shared_links: {
-              ...link,
+              id: link.id,
+              title: link.title,
+              url: link.url,
+              description: link.description,
+              created_at: link.created_at,
+              user_id: link.user_id,
+              ring_id: link.ring_id,
               user: userData
                 ? {
                     full_name: userData.full_name,
@@ -151,7 +161,8 @@ const SavedLinks = () => {
                 : undefined,
             },
           };
-        });
+        })
+        .filter(Boolean) as SavedLink[];
 
       setSavedLinks(processedLinks);
     } catch (error: any) {

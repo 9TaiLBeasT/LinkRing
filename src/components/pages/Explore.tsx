@@ -387,7 +387,11 @@ const Explore = () => {
           linkCounts.data?.filter((l) => l.ring_id === ring.id).length || 0;
 
         return {
-          ...ring,
+          id: ring.id,
+          name: ring.name,
+          description: ring.description,
+          created_by: ring.created_by,
+          is_public: ring.is_public,
           created_at: ring.created_at || new Date().toISOString(),
           invite_code: ring.invite_code || "",
           updated_at: ring.updated_at || new Date().toISOString(),
