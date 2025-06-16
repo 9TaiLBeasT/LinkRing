@@ -41,47 +41,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Listen for changes on auth state (signed in, signed out, etc.)
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (event, session) => {
+    } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null);
       setLoading(false);
-
-      // Handle email confirmation - create profile if it doesn't exist
-      if (event === "SIGNED_IN" && session?.user) {
-        await ensureUserProfile(session.user);
-      }
     });
 
     return () => subscription.unsubscribe();
   }, []);
-
-  // Helper function to ensure user profile exists
-  const ensureUserProfile = async (user: any) => {
-    try {
-      // Check if profile exists
-      const { data: existingProfile, error } = await supabase
-        .from("users")
-        .select("id")
-        .eq("id", user.id)
-        .single();
-
-      if (error && error.code === "PGRST116") {
-        // Profile doesn't exist, create it
-        const fullName =
-          user.user_metadata?.full_name || user.email?.split("@")[0] || "User";
-        const username =
-          user.user_metadata?.username ||
-          user.email
-            ?.split("@")[0]
-            ?.toLowerCase()
-            .replace(/[^a-z0-9]/g, "_") ||
-          `user_${user.id.slice(0, 8)}`;
-
-        await createUserProfile(user, fullName, username);
-      }
-    } catch (error) {
-      console.error("Error ensuring user profile:", error);
-    }
-  };
 
   const signUp = async (
     email: string,
@@ -91,25 +57,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   ) => {
     try {
       // First check if username is available
-      const { data: existingUsers, error: checkError } = await supabase
+      const { data: existingUser, error: checkError } = await supabase
         .from("users")
         .select("username")
         .eq("username", username.toLowerCase())
-        .limit(1);
+        .maybeSingle();
 
-      if (
-        checkError &&
-        !checkError.message?.includes('relation "users" does not exist')
-      ) {
+      if (checkError) {
         console.error("Error checking username:", checkError);
-        throw new Error("Failed to check username availability");
+        // Continue with signup even if username check fails
       }
 
-      if (existingUsers && existingUsers.length > 0) {
+      if (existingUser) {
         throw new Error("Username is already taken");
       }
 
-      // Sign up with Supabase Auth first
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
@@ -126,52 +88,48 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         throw error;
       }
 
-      // Only create user profile if auth signup was successful and user exists
-      if (data.user && !data.user.email_confirmed_at) {
-        // For email confirmation flow, we'll create the profile after confirmation
-        console.log("User created, email confirmation required");
-      } else if (data.user) {
-        // Create user profile immediately if no email confirmation needed
-        await createUserProfile(data.user, fullName, username.toLowerCase());
+      // Wait a moment for the trigger to create the user record, then update with username
+      if (data.user) {
+        // Use a small delay to ensure the trigger has executed
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+
+        // Update the user record with the username (the trigger creates the base record)
+        const { error: updateError } = await supabase
+          .from("users")
+          .update({
+            username: username.toLowerCase(),
+            full_name: fullName || "",
+          })
+          .eq("id", data.user.id);
+
+        if (updateError) {
+          console.error(
+            "Error updating user profile with username:",
+            updateError,
+          );
+          // Try to insert if update failed (in case trigger didn't work)
+          const { error: insertError } = await supabase.from("users").insert({
+            id: data.user.id,
+            user_id: data.user.id,
+            email: data.user.email || "",
+            full_name: fullName || "",
+            username: username.toLowerCase(),
+            token_identifier: data.user.email || data.user.id,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+          });
+
+          if (insertError) {
+            console.error("Error creating user profile:", insertError);
+            throw new Error("Failed to create user profile. Please try again.");
+          }
+        }
       }
 
       console.log("Sign up successful:", !!data.user);
     } catch (error) {
       console.error("Sign up failed:", error);
       throw error;
-    }
-  };
-
-  // Helper function to create user profile
-  const createUserProfile = async (
-    user: any,
-    fullName: string,
-    username: string,
-  ) => {
-    try {
-      const { error: profileError } = await supabase.from("users").upsert(
-        {
-          id: user.id,
-          email: user.email,
-          full_name: fullName,
-          username: username,
-          avatar_url: user.user_metadata?.avatar_url || null,
-        },
-        {
-          onConflict: "id",
-        },
-      );
-
-      if (profileError) {
-        console.error("Error creating user profile:", profileError);
-        // Don't throw error for profile creation issues during signup
-        // The user can still use the app, profile can be created later
-        console.warn("User profile creation failed, but auth user exists");
-      } else {
-        console.log("User profile created successfully");
-      }
-    } catch (error) {
-      console.error("Profile creation error:", error);
     }
   };
 

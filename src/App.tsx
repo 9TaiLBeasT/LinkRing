@@ -5,7 +5,6 @@ import { AuthProvider, useAuth } from "../supabase/auth";
 import { Toaster } from "./components/ui/toaster";
 import { LoadingScreen } from "./components/ui/loading-spinner";
 import ErrorBoundary from "./components/ui/error-boundary";
-import { Analytics } from "@vercel/analytics/react";
 
 // Lazy load components for better performance
 const LoginForm = lazy(() => import("./components/auth/LoginForm"));
@@ -44,7 +43,6 @@ function AppRoutes() {
   return (
     <ErrorBoundary>
       <Suspense fallback={<LoadingScreen text="Loading page..." />}>
-        {import.meta.env.VITE_TEMPO === "true" && useRoutes(routes)}
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<LoginForm />} />
@@ -150,6 +148,7 @@ function AppRoutes() {
             <Route path="/tempobook/*" />
           )}
         </Routes>
+        {import.meta.env.VITE_TEMPO === "true" && useRoutes(routes)}
       </Suspense>
     </ErrorBoundary>
   );
@@ -162,7 +161,6 @@ function App() {
         <div>
           <AppRoutes />
           <Toaster />
-          <Analytics />
         </div>
       </AuthProvider>
     </ErrorBoundary>

@@ -61,7 +61,7 @@ const Sidebar = ({
   isOpen = true,
   onToggle = () => {},
 }: SidebarProps) => {
-  const { rings, loading, error } = useRings();
+  const { rings = [], loading, error } = useRings();
   const navigate = useNavigate();
   const { toast } = useToast();
   const [isMobile, setIsMobile] = useState(false);
@@ -237,7 +237,7 @@ const Sidebar = ({
                 <div className="text-center py-4 text-red-400 text-sm">
                   Failed to load rings
                 </div>
-              ) : rings.length > 0 ? (
+              ) : rings && rings.length > 0 ? (
                 rings.slice(0, 5).map((ring, index) => {
                   const colors = [
                     "bg-neon-green",
