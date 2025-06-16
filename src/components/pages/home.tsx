@@ -115,7 +115,15 @@ export default function LandingPage() {
       <header className="fixed top-0 z-50 w-full bg-neon-dark/90 backdrop-blur-md border-b border-neon-green/20">
         <div className="max-w-7xl mx-auto flex h-16 items-center justify-between px-6">
           <div className="flex items-center">
-            <Link to="/" className="group relative">
+            <Link to="/" className="group relative flex items-center gap-3">
+              <div className="relative">
+                <img
+                  src="/linkring-logo.png"
+                  alt="LinkRing Logo"
+                  className="w-12 h-12 transition-all duration-500 group-hover:scale-110 group-hover:rotate-12 filter drop-shadow-lg group-hover:drop-shadow-neon"
+                />
+                <div className="absolute inset-0 bg-gradient-to-r from-neon-green/20 to-cyan-400/20 rounded-full blur opacity-0 group-hover:opacity-100 transition-opacity duration-300 animate-pulse"></div>
+              </div>
               <div className="stylish-logo text-3xl font-black tracking-wider transition-all duration-500 group-hover:scale-110">
                 <span className="relative inline-block transform transition-transform duration-300">
                   <span className="text-transparent bg-gradient-to-r from-neon-green via-emerald-400 to-cyan-400 bg-clip-text hover:from-cyan-400 hover:via-neon-green hover:to-emerald-400 transition-all duration-500 font-['RICH_THE_BARBER',_'GOLDROPS',_'Impact',_'Arial_Black',_sans-serif]">
@@ -125,7 +133,6 @@ export default function LandingPage() {
                     Ring
                   </span>
                   <div className="absolute -inset-1 bg-gradient-to-r from-neon-green/20 to-cyan-400/20 rounded-lg blur opacity-0 group-hover:opacity-100 transition-opacity duration-300 -z-10"></div>
-                  <div className="absolute top-0 right-0 w-2 h-2 bg-neon-green rounded-full animate-pulse opacity-80"></div>
                 </span>
               </div>
             </Link>
@@ -1240,12 +1247,19 @@ export default function LandingPage() {
         <div className="max-w-7xl mx-auto px-6">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-12">
             <div>
-              <h3 className="font-bold text-xl text-neon-green mb-4 font-['Orbitron',_'Impact',_'Arial_Black',_sans-serif] tracking-wider">
-                <span className="text-transparent bg-gradient-to-r from-neon-green to-emerald-400 bg-clip-text">
-                  Link
-                </span>
-                <span className="text-neon-green ml-1">Ring</span>
-              </h3>
+              <div className="flex items-center gap-3 mb-4">
+                <img
+                  src="/linkring-logo.png"
+                  alt="LinkRing Logo"
+                  className="w-8 h-8 filter drop-shadow-lg"
+                />
+                <h3 className="font-bold text-xl text-neon-green font-['Orbitron',_'Impact',_'Arial_Black',_sans-serif] tracking-wider">
+                  <span className="text-transparent bg-gradient-to-r from-neon-green to-emerald-400 bg-clip-text">
+                    Link
+                  </span>
+                  <span className="text-neon-green ml-1">Ring</span>
+                </h3>
+              </div>
               <p className="text-gray-400 text-sm leading-relaxed">
                 The future of private link sharing. Secure, stylish, and built
                 for the digital underground.
