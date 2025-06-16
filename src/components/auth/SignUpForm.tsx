@@ -41,7 +41,24 @@ export default function SignUpForm() {
       });
       navigate("/login");
     } catch (error: any) {
-      setError(error.message || "Error creating account");
+      console.error("Signup error:", error);
+      let errorMessage = "Error creating account";
+
+      if (error.message?.includes("User already registered")) {
+        errorMessage =
+          "An account with this email already exists. Please sign in instead.";
+      } else if (error.message?.includes("Username is already taken")) {
+        errorMessage =
+          "This username is already taken. Please choose a different one.";
+      } else if (error.message?.includes("Invalid email")) {
+        errorMessage = "Please enter a valid email address.";
+      } else if (error.message?.includes("Password")) {
+        errorMessage = "Password must be at least 8 characters long.";
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+
+      setError(errorMessage);
     } finally {
       setIsLoading(false);
     }
@@ -70,16 +87,23 @@ export default function SignUpForm() {
 
     setCheckingUsername(true);
     try {
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from("users")
         .select("username")
         .eq("username", usernameToCheck.toLowerCase())
-        .single();
+        .limit(1);
 
-      setUsernameAvailable(!data);
+      if (error) {
+        console.error("Error checking username:", error);
+        setUsernameAvailable(null);
+        return;
+      }
+
+      // Username is available if no results found
+      setUsernameAvailable(!data || data.length === 0);
     } catch (error) {
-      // If no user found, username is available
-      setUsernameAvailable(true);
+      console.error("Username check failed:", error);
+      setUsernameAvailable(null);
     } finally {
       setCheckingUsername(false);
     }
