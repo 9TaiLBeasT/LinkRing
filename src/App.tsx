@@ -43,6 +43,9 @@ function AppRoutes() {
   return (
     <ErrorBoundary>
       <Suspense fallback={<LoadingScreen text="Loading page..." />}>
+        {/* Tempo routes need to be rendered first to avoid conflicts */}
+        {import.meta.env.VITE_TEMPO === "true" && useRoutes(routes)}
+
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<LoginForm />} />
@@ -144,11 +147,11 @@ function AppRoutes() {
               </PrivateRoute>
             }
           />
+          {/* Tempo routes fallback */}
           {import.meta.env.VITE_TEMPO === "true" && (
-            <Route path="/tempobook/*" />
+            <Route path="/tempobook/*" element={<div>Tempo Route</div>} />
           )}
         </Routes>
-        {import.meta.env.VITE_TEMPO === "true" && useRoutes(routes)}
       </Suspense>
     </ErrorBoundary>
   );

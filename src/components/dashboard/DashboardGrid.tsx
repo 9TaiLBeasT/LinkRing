@@ -149,7 +149,12 @@ const RingCard = ({ ring, onDelete, onLeave }: RingCardProps) => {
 };
 
 const DashboardGrid = ({ isLoading = false }: DashboardGridProps) => {
-  const { rings, loading: ringsLoading, deleteRing, leaveRing } = useRings();
+  const {
+    rings = [],
+    loading: ringsLoading,
+    deleteRing,
+    leaveRing,
+  } = useRings();
   const [loading, setLoading] = useState(isLoading);
 
   // Simulate loading for demo purposes
@@ -162,11 +167,13 @@ const DashboardGrid = ({ isLoading = false }: DashboardGridProps) => {
     }
   }, [isLoading]);
 
-  const totalMembers = rings.reduce(
+  // Ensure rings is always an array before using reduce
+  const safeRings = Array.isArray(rings) ? rings : [];
+  const totalMembers = safeRings.reduce(
     (sum, ring) => sum + (ring.member_count || 0),
     0,
   );
-  const totalLinks = rings.reduce(
+  const totalLinks = safeRings.reduce(
     (sum, ring) => sum + (ring.link_count || 0),
     0,
   );
@@ -217,7 +224,7 @@ const DashboardGrid = ({ isLoading = false }: DashboardGridProps) => {
             </div>
             <div className="text-right">
               <div className="text-2xl font-bold text-white animate-counter-up">
-                {rings.length}
+                {safeRings.length}
               </div>
               <div className="text-neon-green/70 text-sm">Active Rings</div>
             </div>
@@ -264,7 +271,7 @@ const DashboardGrid = ({ isLoading = false }: DashboardGridProps) => {
         </div>
 
         <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {rings.map((ring, index) => (
+          {safeRings.map((ring, index) => (
             <div
               key={ring.id}
               className="animate-slide-in-bottom"
