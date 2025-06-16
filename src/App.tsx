@@ -5,6 +5,7 @@ import { AuthProvider, useAuth } from "../supabase/auth";
 import { Toaster } from "./components/ui/toaster";
 import { LoadingScreen } from "./components/ui/loading-spinner";
 import ErrorBoundary from "./components/ui/error-boundary";
+import { Analytics } from "@vercel/analytics/react";
 
 // Lazy load components for better performance
 const LoginForm = lazy(() => import("./components/auth/LoginForm"));
@@ -161,6 +162,7 @@ function App() {
         <div>
           <AppRoutes />
           <Toaster />
+          <Analytics />
         </div>
       </AuthProvider>
     </ErrorBoundary>
