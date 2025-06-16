@@ -231,9 +231,10 @@ export function useRingData(ringId: string) {
       }
 
       try {
-        // Optimistic update
+        // Optimistic update with unique temp ID
+        const tempId = `temp_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
         const tempLink: SharedLink = {
-          id: `temp_${Date.now()}`,
+          id: tempId,
           ring_id: memoizedRingId,
           user_id: userId,
           url,
@@ -302,7 +303,7 @@ export function useRingData(ringId: string) {
 
             // Update optimistic link with real data
             setLinks((prev) => {
-              const filtered = prev.filter((l) => l.id !== tempLink.id);
+              const filtered = prev.filter((l) => l.id !== tempId);
               const realLink = {
                 ...fallbackLinkData,
                 user_name: `User ${userId.slice(-4)}`,
@@ -326,7 +327,7 @@ export function useRingData(ringId: string) {
 
         // Update optimistic link with real data
         setLinks((prev) => {
-          const filtered = prev.filter((l) => l.id !== tempLink.id);
+          const filtered = prev.filter((l) => l.id !== tempId);
           const realLink = {
             ...linkData,
             user_name: `User ${userId.slice(-4)}`,
@@ -342,8 +343,7 @@ export function useRingData(ringId: string) {
         return linkData;
       } catch (error: any) {
         // Remove optimistic update on error
-        const tempLinkId = `temp_${Date.now()}`;
-        setLinks((prev) => prev.filter((l) => l.id !== tempLinkId));
+        setLinks((prev) => prev.filter((l) => l.id !== tempId));
 
         console.error("Error sharing link:", error);
         toast({

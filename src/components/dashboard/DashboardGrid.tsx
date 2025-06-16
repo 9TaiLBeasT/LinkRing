@@ -154,6 +154,7 @@ const DashboardGrid = ({ isLoading = false }: DashboardGridProps) => {
     loading: ringsLoading,
     deleteRing,
     leaveRing,
+    refetch,
   } = useRings();
   const [loading, setLoading] = useState(isLoading);
 
@@ -166,6 +167,18 @@ const DashboardGrid = ({ isLoading = false }: DashboardGridProps) => {
       return () => clearTimeout(timer);
     }
   }, [isLoading]);
+
+  // Debug logging to track ring updates
+  useEffect(() => {
+    console.log("DashboardGrid: Rings updated", {
+      count: rings.length,
+      rings: rings.map((r) => ({
+        id: r.id,
+        name: r.name,
+        isTemp: r.id.startsWith("temp_"),
+      })),
+    });
+  }, [rings]);
 
   // Ensure rings is always an array before using reduce
   const safeRings = Array.isArray(rings) ? rings : [];

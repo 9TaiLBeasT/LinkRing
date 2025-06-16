@@ -33,19 +33,30 @@ const CreateRingDialog = ({ children }: CreateRingDialogProps) => {
     if (!name.trim()) return;
 
     setLoading(true);
-    const result = await createRing(
-      name.trim(),
-      description.trim() || undefined,
-      isPublic,
-    );
+    try {
+      const result = await createRing(
+        name.trim(),
+        description.trim() || undefined,
+        isPublic,
+      );
 
-    if (result) {
-      setName("");
-      setDescription("");
-      setIsPublic(false);
-      setOpen(false);
+      if (result) {
+        // Reset form and close dialog
+        setName("");
+        setDescription("");
+        setIsPublic(false);
+        setOpen(false);
+
+        // Force a small delay to ensure UI updates
+        setTimeout(() => {
+          console.log("Ring creation completed successfully");
+        }, 100);
+      }
+    } catch (error) {
+      console.error("Error in handleSubmit:", error);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   return (

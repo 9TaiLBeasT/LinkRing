@@ -54,29 +54,32 @@ export function useRings() {
   // Memoize user ID to prevent unnecessary re-renders
   const userId = useMemo(() => user?.id, [user?.id]);
 
-  const fetchRings = useCallback(async () => {
-    if (!userId) return;
+  const fetchRings = useCallback(
+    async (skipCache = false) => {
+      if (!userId) return;
 
-    try {
-      setLoading(true);
-      setError(null);
+      try {
+        setLoading(true);
+        setError(null);
 
-      // Check cache first
-      const cacheKey = `rings_${userId}`;
-      const cachedData = apiCache.get(cacheKey);
-      if (cachedData) {
-        setRings(cachedData);
-        setLoading(false);
-        return;
-      }
+        // Check cache first (unless explicitly skipping)
+        const cacheKey = `rings_${userId}`;
+        if (!skipCache) {
+          const cachedData = apiCache.get(cacheKey);
+          if (cachedData) {
+            setRings(cachedData);
+            setLoading(false);
+            return;
+          }
+        }
 
-      // Use retry mechanism for better reliability
-      const result = await retryAsync(async () => {
-        // Get rings where user is a member with optimized query
-        const { data: memberRings, error: memberError } = await supabase
-          .from("ring_members")
-          .select(
-            `
+        // Use retry mechanism for better reliability
+        const result = await retryAsync(async () => {
+          // Get rings where user is a member with optimized query
+          const { data: memberRings, error: memberError } = await supabase
+            .from("ring_members")
+            .select(
+              `
             ring_id,
             role,
             rings (
@@ -90,87 +93,95 @@ export function useRings() {
               updated_at
             )
           `,
-          )
-          .eq("user_id", userId);
+            )
+            .eq("user_id", userId)
+            .order("joined_at", { ascending: false });
 
-        if (memberError) {
-          console.error("Member rings error:", memberError);
-          throw memberError;
+          if (memberError) {
+            console.error("Member rings error:", memberError);
+            throw memberError;
+          }
+
+          // Get member counts and link counts for each ring
+          const ringIds = memberRings?.map((mr) => mr.ring_id) || [];
+
+          if (ringIds.length === 0) {
+            return [];
+          }
+
+          // Only fetch counts if we have ring IDs
+          const [memberCountsResult, linkCountsResult] = await Promise.all([
+            supabase
+              .from("ring_members")
+              .select("ring_id")
+              .in("ring_id", ringIds),
+            supabase
+              .from("shared_links")
+              .select("ring_id")
+              .in("ring_id", ringIds),
+          ]);
+
+          if (memberCountsResult.error) {
+            console.error("Member counts error:", memberCountsResult.error);
+          }
+          if (linkCountsResult.error) {
+            console.error("Link counts error:", linkCountsResult.error);
+          }
+
+          // Process the data
+          const processedRings: Ring[] =
+            memberRings?.map((mr) => {
+              const ring = mr.rings as any;
+              const memberCount =
+                memberCountsResult.data?.filter((mc) => mc.ring_id === ring.id)
+                  .length || 0;
+              const linkCount =
+                linkCountsResult.data?.filter((lc) => lc.ring_id === ring.id)
+                  .length || 0;
+
+              return {
+                ...ring,
+                is_public: ring.is_public === true,
+                member_count: memberCount,
+                link_count: linkCount,
+                is_owner: ring.created_by === userId,
+              };
+            }) || [];
+
+          return processedRings;
+        });
+
+        setRings(result);
+        // Cache the result only if we have data
+        if (result.length > 0 || !skipCache) {
+          apiCache.set(cacheKey, result, 1 * 60 * 1000); // 1 minute cache
         }
-
-        // Get member counts and link counts for each ring
-        const ringIds = memberRings?.map((mr) => mr.ring_id) || [];
-
-        if (ringIds.length === 0) {
-          setRings([]);
-          return;
+      } catch (error: any) {
+        console.error("Error fetching rings:", error);
+        setError(error.message || "Failed to load rings");
+        // Only show toast if this isn't a background refresh
+        if (!skipCache) {
+          toast({
+            title: "Error",
+            description: `Failed to load rings: ${error.message || "Unknown error"}`,
+            variant: "destructive",
+          });
         }
-
-        // Only fetch counts if we have ring IDs
-        const [memberCountsResult, linkCountsResult] = await Promise.all([
-          supabase
-            .from("ring_members")
-            .select("ring_id")
-            .in("ring_id", ringIds),
-          supabase
-            .from("shared_links")
-            .select("ring_id")
-            .in("ring_id", ringIds),
-        ]);
-
-        if (memberCountsResult.error) {
-          console.error("Member counts error:", memberCountsResult.error);
-        }
-        if (linkCountsResult.error) {
-          console.error("Link counts error:", linkCountsResult.error);
-        }
-
-        // Process the data
-        const processedRings: Ring[] =
-          memberRings?.map((mr) => {
-            const ring = mr.rings as any;
-            const memberCount =
-              memberCountsResult.data?.filter((mc) => mc.ring_id === ring.id)
-                .length || 0;
-            const linkCount =
-              linkCountsResult.data?.filter((lc) => lc.ring_id === ring.id)
-                .length || 0;
-
-            return {
-              ...ring,
-              is_public: ring.is_public === true,
-              member_count: memberCount,
-              link_count: linkCount,
-              is_owner: ring.created_by === user.id,
-            };
-          }) || [];
-
-        return processedRings;
-      });
-
-      setRings(result);
-      // Cache the result
-      apiCache.set(cacheKey, result, 2 * 60 * 1000); // 2 minutes cache
-    } catch (error: any) {
-      console.error("Error fetching rings:", error);
-      setError(error.message || "Failed to load rings");
-      toast({
-        title: "Error",
-        description: `Failed to load rings: ${error.message || "Unknown error"}`,
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
-    }
-  }, [userId, toast]);
+      } finally {
+        setLoading(false);
+      }
+    },
+    [userId, toast],
+  );
 
   const createRing = useCallback(
     async (name: string, description?: string, isPublic: boolean = false) => {
       if (!userId) return null;
 
-      // Optimistic update
+      // Generate unique temporary ID to avoid conflicts
+      const tempId = `temp_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
       const tempRing: Ring = {
-        id: `temp_${Date.now()}`,
+        id: tempId,
         name,
         description,
         invite_code: "CREATING...",
@@ -183,12 +194,15 @@ export function useRings() {
         is_owner: true,
       };
 
+      // Optimistic update - add to beginning of array
       setRings((prev) => [tempRing, ...prev]);
 
       try {
         // Generate unique invite code
         let inviteCode: string;
         let isUnique = false;
+        let attempts = 0;
+        const maxAttempts = 5;
 
         do {
           inviteCode = Math.random()
@@ -203,7 +217,12 @@ export function useRings() {
 
           // If there's an error or no existing record, the code is unique
           isUnique = !!error || !existing;
-        } while (!isUnique);
+          attempts++;
+        } while (!isUnique && attempts < maxAttempts);
+
+        if (!isUnique) {
+          throw new Error("Failed to generate unique invite code");
+        }
 
         // Create the ring
         console.log("Creating ring with isPublic:", isPublic);
@@ -234,11 +253,12 @@ export function useRings() {
 
         if (memberError) throw memberError;
 
-        // Remove temp ring and add real ring
+        // Replace optimistic update with real data
         setRings((prev) => {
-          const filtered = prev.filter((r) => r.id !== tempRing.id);
+          const filtered = prev.filter((r) => r.id !== tempId);
           const realRing: Ring = {
             ...ring,
+            is_public: ring.is_public === true,
             member_count: 1,
             link_count: 0,
             is_owner: true,
@@ -246,29 +266,33 @@ export function useRings() {
           return [realRing, ...filtered];
         });
 
-        // Clear cache to force refresh
+        // Clear cache to ensure fresh data on next fetch
         apiCache.delete(`rings_${userId}`);
+
+        // Immediately refresh to sync with server and update counts
+        fetchRings(true);
 
         toast({
           title: "Success",
           description: `Ring "${name}" created successfully!`,
+          className: "bg-neon-dark border-neon-green text-neon-green",
         });
 
         return ring;
       } catch (error: any) {
         // Remove optimistic update on error
-        setRings((prev) => prev.filter((r) => r.id !== tempRing.id));
+        setRings((prev) => prev.filter((r) => r.id !== tempId));
 
         console.error("Error creating ring:", error);
         toast({
           title: "Error",
-          description: "Failed to create ring",
+          description: `Failed to create ring: ${error.message || "Unknown error"}`,
           variant: "destructive",
         });
         return null;
       }
     },
-    [userId, toast],
+    [userId, toast, fetchRings],
   );
 
   const joinRing = useCallback(
@@ -279,7 +303,9 @@ export function useRings() {
         // Find the ring by invite code
         const { data: ring, error: ringError } = await supabase
           .from("rings")
-          .select("id, name")
+          .select(
+            "id, name, description, invite_code, created_by, is_public, created_at, updated_at",
+          )
           .eq("invite_code", inviteCode.toUpperCase())
           .single();
 
@@ -319,9 +345,21 @@ export function useRings() {
 
         if (memberError) throw memberError;
 
-        // Clear cache and refresh
+        // Optimistically add the ring to local state
+        const newRing: Ring = {
+          ...ring,
+          member_count: 1, // We don't know the exact count, but at least 1 (us)
+          link_count: 0, // We don't know the exact count
+          is_owner: false,
+        };
+
+        setRings((prev) => [newRing, ...prev]);
+
+        // Clear cache and immediately refresh to get accurate counts
         apiCache.delete(`rings_${userId}`);
-        await fetchRings();
+        setTimeout(() => {
+          fetchRings(true);
+        }, 500);
 
         toast({
           title: "Success",
@@ -347,6 +385,9 @@ export function useRings() {
       if (!userId) return false;
 
       try {
+        // Store the ring being deleted for potential rollback
+        const ringToDelete = rings.find((ring) => ring.id === ringId);
+
         // Optimistic update
         setRings((prev) => prev.filter((ring) => ring.id !== ringId));
 
@@ -368,8 +409,10 @@ export function useRings() {
 
         return true;
       } catch (error: any) {
-        // Revert optimistic update on error
-        await fetchRings();
+        // Revert optimistic update on error by refetching
+        setTimeout(() => {
+          fetchRings(true);
+        }, 100);
 
         console.error("Error deleting ring:", error);
         toast({
@@ -380,7 +423,7 @@ export function useRings() {
         return false;
       }
     },
-    [userId, toast, fetchRings],
+    [userId, toast, fetchRings, rings],
   );
 
   const leaveRing = useCallback(
@@ -388,6 +431,9 @@ export function useRings() {
       if (!userId) return false;
 
       try {
+        // Store the ring being left for potential rollback
+        const ringToLeave = rings.find((ring) => ring.id === ringId);
+
         // Optimistic update
         setRings((prev) => prev.filter((ring) => ring.id !== ringId));
 
@@ -409,8 +455,10 @@ export function useRings() {
 
         return true;
       } catch (error: any) {
-        // Revert optimistic update on error
-        await fetchRings();
+        // Revert optimistic update on error by refetching
+        setTimeout(() => {
+          fetchRings(true);
+        }, 100);
 
         console.error("Error leaving ring:", error);
         toast({
@@ -421,7 +469,7 @@ export function useRings() {
         return false;
       }
     },
-    [userId, toast, fetchRings],
+    [userId, toast, fetchRings, rings],
   );
 
   // Set up real-time subscription for rings
@@ -430,39 +478,95 @@ export function useRings() {
 
     fetchRings();
 
-    // Subscribe to ring changes
+    // Subscribe to ring changes with debounced updates
     const channel = supabase
-      .channel(`user_rings_${userId}`)
+      .channel(`user_rings_${userId}`, {
+        config: {
+          broadcast: { self: false },
+          presence: { key: userId },
+        },
+      })
       .on(
         "postgres_changes",
         {
-          event: "*",
+          event: "INSERT",
           schema: "public",
           table: "ring_members",
           filter: `user_id=eq.${userId}`,
         },
-        () => {
-          // Clear cache and refetch when ring membership changes
-          apiCache.delete(`rings_${userId}`);
-          fetchRings();
+        (payload) => {
+          console.log("Real-time ring member INSERT:", payload);
+          // Debounce real-time updates to avoid excessive fetching
+          setTimeout(() => {
+            apiCache.delete(`rings_${userId}`);
+            fetchRings(true);
+          }, 1000);
         },
       )
       .on(
         "postgres_changes",
         {
-          event: "*",
+          event: "DELETE",
+          schema: "public",
+          table: "ring_members",
+          filter: `user_id=eq.${userId}`,
+        },
+        (payload) => {
+          console.log("Real-time ring member DELETE:", payload);
+          const deletedMember = payload.old as any;
+          // Remove ring from local state immediately
+          setRings((prev) =>
+            prev.filter((ring) => ring.id !== deletedMember.ring_id),
+          );
+        },
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "UPDATE",
           schema: "public",
           table: "rings",
         },
-        () => {
-          // Clear cache and refetch when any ring changes
-          apiCache.delete(`rings_${userId}`);
-          fetchRings();
+        (payload) => {
+          console.log("Real-time ring UPDATE:", payload);
+          const updatedRing = payload.new as any;
+          // Update ring in local state
+          setRings((prev) =>
+            prev.map((ring) =>
+              ring.id === updatedRing.id
+                ? {
+                    ...ring,
+                    ...updatedRing,
+                    is_public: updatedRing.is_public === true,
+                  }
+                : ring,
+            ),
+          );
         },
       )
-      .subscribe();
+      .on(
+        "postgres_changes",
+        {
+          event: "DELETE",
+          schema: "public",
+          table: "rings",
+        },
+        (payload) => {
+          console.log("Real-time ring DELETE:", payload);
+          const deletedRing = payload.old as any;
+          // Remove ring from local state immediately
+          setRings((prev) => prev.filter((ring) => ring.id !== deletedRing.id));
+        },
+      )
+      .subscribe((status, err) => {
+        console.log(`Rings subscription status for ${userId}:`, status);
+        if (err) {
+          console.error(`Rings subscription error for ${userId}:`, err);
+        }
+      });
 
     return () => {
+      console.log(`Cleaning up rings subscription for user: ${userId}`);
       supabase.removeChannel(channel);
     };
   }, [userId, fetchRings]);

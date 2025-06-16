@@ -46,6 +46,13 @@ export function useLinkChat({ linkId, linkCreatedAt }: UseLinkChatProps) {
   const fetchMessages = useCallback(async () => {
     if (!linkId || !user) return;
 
+    // Skip fetching for temporary link IDs
+    if (linkId.startsWith("temp_")) {
+      console.log("Skipping chat fetch for temporary link ID:", linkId);
+      setLoading(false);
+      return;
+    }
+
     try {
       setLoading(true);
 
@@ -61,11 +68,14 @@ export function useLinkChat({ linkId, linkCreatedAt }: UseLinkChatProps) {
 
       if (error) {
         console.error("Error fetching chat messages:", error);
-        toast({
-          title: "Error",
-          description: "Failed to load chat messages",
-          variant: "destructive",
-        });
+        // Only show toast for non-temporary links
+        if (!linkId.startsWith("temp_")) {
+          toast({
+            title: "Error",
+            description: "Failed to load chat messages",
+            variant: "destructive",
+          });
+        }
         return;
       }
 
@@ -81,11 +91,14 @@ export function useLinkChat({ linkId, linkCreatedAt }: UseLinkChatProps) {
       setMessages(validMessages);
     } catch (error) {
       console.error("Error in fetchMessages:", error);
-      toast({
-        title: "Error",
-        description: "Failed to load chat messages",
-        variant: "destructive",
-      });
+      // Only show toast for non-temporary links
+      if (!linkId.startsWith("temp_")) {
+        toast({
+          title: "Error",
+          description: "Failed to load chat messages",
+          variant: "destructive",
+        });
+      }
     } finally {
       setLoading(false);
     }
@@ -184,6 +197,15 @@ export function useLinkChat({ linkId, linkCreatedAt }: UseLinkChatProps) {
   useEffect(() => {
     if (!linkId || !user) return;
 
+    // Skip real-time subscription for temporary link IDs
+    if (linkId.startsWith("temp_")) {
+      console.log(
+        "Skipping real-time subscription for temporary link ID:",
+        linkId,
+      );
+      return;
+    }
+
     console.log(`Setting up real-time subscription for link: ${linkId}`);
 
     const channel = supabase
@@ -247,12 +269,15 @@ export function useLinkChat({ linkId, linkCreatedAt }: UseLinkChatProps) {
         console.log(`Subscription status for ${linkId}:`, status);
         if (err) {
           console.error(`Subscription error for ${linkId}:`, err);
-          toast({
-            title: "Connection Issue",
-            description:
-              "Real-time chat updates may be delayed. Try refreshing if needed.",
-            variant: "destructive",
-          });
+          // Only show toast for non-temporary links
+          if (!linkId.startsWith("temp_")) {
+            toast({
+              title: "Connection Issue",
+              description:
+                "Real-time chat updates may be delayed. Try refreshing if needed.",
+              variant: "destructive",
+            });
+          }
         }
       });
 
