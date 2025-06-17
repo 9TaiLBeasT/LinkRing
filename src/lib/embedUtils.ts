@@ -37,8 +37,10 @@ export type EmbedType =
 // Platform detection patterns
 const PLATFORM_PATTERNS = {
   youtube: [
-    /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([\w-]+)/,
-    /youtube\.com\/shorts\/([\w-]+)/,
+    /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([\w-]+)/i,
+    /youtube\.com\/shorts\/([\w-]+)/i,
+    /(?:www\.)?youtube\.com\/watch\?.*v=([\w-]+)/i,
+    /(?:www\.)?youtu\.be\/([\w-]+)/i,
   ],
   twitter: [/(?:twitter\.com|x\.com)\/\w+\/status\/(\d+)/],
   spotify: [/open\.spotify\.com\/(track|album|playlist|artist)\/([\w]+)/],
@@ -99,8 +101,14 @@ export function detectPlatform(url: string): EmbedType {
  * Extract embed data from a URL
  */
 export function extractEmbedData(url: string): EmbedData | null {
+  console.log("🔍 Extracting embed data for URL:", url);
   const platform = detectPlatform(url);
-  if (!platform) return null;
+  console.log("🎯 Detected platform:", platform);
+
+  if (!platform) {
+    console.warn("❌ No platform detected for URL:", url);
+    return null;
+  }
 
   try {
     switch (platform) {
@@ -154,22 +162,28 @@ export function extractEmbedData(url: string): EmbedData | null {
  * Extract YouTube video data
  */
 function extractYouTubeData(url: string): EmbedData | null {
+  console.log("🎬 Extracting YouTube data for:", url);
   const patterns = PLATFORM_PATTERNS.youtube;
 
   for (const pattern of patterns) {
+    console.log("🔍 Testing pattern:", pattern);
     const match = url.match(pattern);
     if (match) {
       const videoId = match[1];
-      return {
+      console.log("✅ Found YouTube video ID:", videoId);
+      const embedData = {
         type: "youtube",
         id: videoId,
-        embedUrl: `https://www.youtube.com/embed/${videoId}?rel=0&modestbranding=1`,
+        embedUrl: `https://www.youtube.com/embed/${videoId}?controls=0&rel=0&modestbranding=1&showinfo=0&fs=0&disablekb=1&iv_load_policy=3&cc_load_policy=0&enablejsapi=1&origin=${window.location.origin}`,
         thumbnail: `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`,
         originalUrl: url,
       };
+      console.log("📺 Created YouTube embed data:", embedData);
+      return embedData;
     }
   }
 
+  console.warn("❌ No YouTube pattern matched for URL:", url);
   return null;
 }
 

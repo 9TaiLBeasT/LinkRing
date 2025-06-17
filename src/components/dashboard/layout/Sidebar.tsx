@@ -44,7 +44,7 @@ interface SidebarProps {
 const defaultNavItems: NavItem[] = [
   { icon: <LayoutDashboard size={20} />, label: "Dashboard", isActive: true },
   { icon: <Search size={20} />, label: "Explore" },
-  { icon: <Play size={20} />, label: "WatchParties" },
+
   { icon: <BarChart3 size={20} />, label: "Leaderboard" },
   { icon: <Mail size={20} />, label: "Weekly Digest" },
 ];
@@ -88,13 +88,6 @@ const Sidebar = ({
       navigate("/dashboard");
     } else if (label === "Explore") {
       navigate("/explore");
-    } else if (label === "WatchParties") {
-      toast({
-        title: "Coming Soon! 🎬",
-        description:
-          "WatchParties feature is being improved and will be available soon!",
-        className: "bg-neon-dark border-neon-green text-neon-green",
-      });
     } else if (label === "Leaderboard") {
       navigate("/leaderboard");
     } else if (label === "Weekly Digest") {
@@ -200,21 +193,6 @@ const Sidebar = ({
                           Join Ring
                         </Button>
                       </JoinRingDialog>
-                    </div>
-                  </div>
-                )}
-
-                {/* WatchParty submenu */}
-                {item.label === "WatchParties" && (
-                  <div className="absolute left-full top-0 ml-2 w-48 bg-neon-gray/90 backdrop-blur-md border border-neon-green/20 rounded-xl p-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-50">
-                    <div className="space-y-1">
-                      <div className="px-3 py-2 text-xs text-neon-green/70 font-medium">
-                        Coming Soon
-                      </div>
-                      <div className="px-3 py-2 text-xs text-gray-400">
-                        🎬 WatchParties feature is being improved and will be
-                        available soon!
-                      </div>
                     </div>
                   </div>
                 )}
